@@ -1,0 +1,472 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAF Premium Earning App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-color: #130f1e; /* ውብ አሞራዊ/ጥቁር-ሐምራዊ ከለር */
+            --card-bg: #1a1525;
+            --text-color: #e2e8f0;
+            --neon-blue: #00f2fe;
+            --neon-green: #00ff87;
+            --neon-red: #ff416c;
+            --nav-bg: #221a35;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 15px;
+            padding-bottom: 80px;
+        }
+
+        /* LED Glowing Rainbow Waves */
+        @keyframes led-glow {
+            0% { box-shadow: 0 0 8px var(--neon-blue); border-color: var(--neon-blue); }
+            50% { box-shadow: 0 0 15px var(--neon-green); border-color: var(--neon-green); }
+            100% { box-shadow: 0 0 8px var(--neon-blue); border-color: var(--neon-blue); }
+        }
+
+        @keyframes float-animation {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .page { display: none; }
+        .active-page { display: block; }
+
+        .top-header {
+            text-align: center;
+            padding: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 12px var(--neon-blue);
+            letter-spacing: 1px;
+        }
+
+        .premium-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 15px;
+            animation: float-animation 5s ease-in-out infinite;
+        }
+
+        .balance-display {
+            font-size: 40px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 10px var(--neon-green);
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .led-btn {
+            background: transparent;
+            color: #fff;
+            border: 2px solid var(--neon-blue);
+            padding: 12px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            text-align: center;
+            text-transform: uppercase;
+            animation: led-glow 3s linear infinite;
+            transition: 0.2s;
+        }
+
+        .led-btn:active { transform: scale(0.97); }
+
+        .app-task-card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 15px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255,255,255,0.03);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .app-info h4 { margin: 0 0 5px 0; color: #fff; font-size: 16px; }
+        .app-info p { margin: 0; font-size: 13px; color: #a0aec0; }
+
+        .app-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        .action-link {
+            color: var(--neon-green);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: bold;
+            text-shadow: 0 0 5px rgba(0,255,135,0.3);
+        }
+
+        .copy-btn {
+            background: #221a35;
+            color: var(--neon-blue);
+            border: 1px solid var(--neon-blue);
+            padding: 5px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .submit-proof-btn {
+            background: transparent;
+            color: #ff9f43;
+            border: 1px solid #ff9f43;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Custom Custom Neon Alerts (No more boring white alerts) */
+        .custom-alert {
+            display: none;
+            position: fixed;
+            top: 20px; left: 5%; width: 90%;
+            background: #1a1525;
+            border: 2px solid var(--neon-green);
+            box-shadow: 0 0 15px var(--neon-green);
+            color: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            z-index: 2000;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0; left: 0; width: 100%;
+            background: var(--nav-bg);
+            display: flex;
+            justify-content: space-around;
+            padding: 14px 0;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            z-index: 100;
+        }
+
+        .nav-item {
+            color: #a0aec0;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .nav-item.active {
+            color: var(--neon-blue);
+            text-shadow: 0 0 8px var(--neon-blue);
+        }
+
+        /* Modals */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            justify-content: center;
+            align-items: center;
+            z-index: 500;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 16px;
+            width: 80%;
+            text-align: center;
+            border: 1px solid var(--neon-blue);
+            box-shadow: 0 0 15px rgba(0,242,254,0.2);
+        }
+
+        input {
+            width: 90%;
+            padding: 11px;
+            margin: 10px 0;
+            background: #130f1e;
+            border: 1px solid #30363d;
+            color: white;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="custom-alert" id="custom-alert-box">Alert Message Here</div>
+    <div class="top-header">FAF EARNING HUB</div>
+
+    <!-- ==================== TABS 1: HOME ==================== -->
+    <div id="Home" class="page active-page">
+        <div class="premium-card">
+            <h3 style="margin-top:0; text-align:center; color:#fff;">👋 እንኳን በደህና መጡ!</h3>
+            <p style="color:#a0aec0; font-size:14px; line-height:1.5; text-align:center;">
+                እንኳን ወደ FAF Earning Hub በሰላም መጡ። ከታች ያለውን የ <b>Earn</b> ገጽ በመክፈት የዕለቱ የቪዲዮ ማስታወቂያዎችን ማየት እና የተመረጡ 10 ታማኝ አፕሊኬሽኖችን በመጫን ከፍተኛ የኮሚሽን ገቢ ማሰባሰብ ይችላሉ።
+            </p>
+        </div>
+        <div class="premium-card">
+            <h4 style="margin-top:0; text-align:center; color:#fff;">📊 የእርስዎ የዛሬ ስታቲስቲክስ</h4>
+            <div style="display:flex; justify-content:space-around; text-align:center; font-size:14px; margin-top:15px;">
+                <div>
+                    <span style="color:var(--neon-blue); font-weight:bold; display:block; font-size:18px;" id="stat-ads">0</span>
+                    ማስታወቂያ የታየ
+                </div>
+                <div>
+                    <span style="color:var(--neon-green); font-weight:bold; display:block; font-size:18px;" id="stat-inv">0</span>
+                    የተጋበዙ ሰዎች
+                </div>
+            </div>
+        </div>
+        <button class="led-btn" onclick="triggerDailyBonus()">🎁 Claim Daily Bonus</button>
+    </div>
+
+    <!-- ==================== TABS 2: EARN ==================== -->
+    <div id="Earn" class="page">
+        <div class="premium-card" style="text-align: center;">
+            <h4 style="margin: 0 0 10px 0; color:#fff;">Daily Video Ads</h4>
+            <p style="font-size: 14px; margin-bottom: 15px;" id="ad-counter">Ads Watched: 0 / 15</p>
+            <button class="led-btn" onclick="watchAdVideo()">Watch Video Ad</button>
+        </div>
+
+        <h3 style="padding-left: 5px; color: #fff; font-size: 16px;">Strict App Tasks (10 Active)</h3>
+        <div id="apps-container"></div>
+    </div>
+
+    <!-- ==================== TABS 3: REFER ==================== -->
+    <div id="Refer" class="page">
+        <div class="premium-card" style="text-align: center;">
+            <h3 style="color:#fff;">የጓደኛ መጋበዣ ሊንክ</h3>
+            <p style="font-size:14px; color:#a0aec0;">የእርስዎን መጋበዣ ሊንክ ኮፒ በማድረግ ለጓደኞችዎ ያጋሩ። እያንዳንዱ ሰው በእርስዎ ሊንክ ሲመዘገብ <b>+5.00 ETB</b> ወዲያውኑ ወደ አካውንትዎ ይገባል!</p>
+            <div style="background: #130f1e; padding: 12px; border-radius: 8px; margin: 15px 0; font-family: monospace; font-size:13px; color:var(--neon-blue); word-break:break-all;" id="ref-link">
+                Loading referral link...
+            </div>
+            <button class="led-btn" onclick="copyRefLink()">Copy Link</button>
+        </div>
+    </div>
+
+    <!-- ==================== TABS 4: ME ==================== -->
+    <div id="Me" class="page">
+        <div class="premium-card">
+            <div style="text-align: center; color: #a0aec0; font-size:14px;">Total Account Balance</div>
+            <div class="balance-display"><span id="user-balance">0.00</span> ETB</div>
+        </div>
+
+        <div class="premium-card">
+            <h4 style="margin-top:0; color: #fff;">የደህንነት ቅንብሮች</h4>
+            <button class="led-btn" style="margin-bottom: 12px;" onclick="openPinSetup()">Setup Withdrawal PIN</button>
+            <button class="led-btn" style="animation: none; border-color: var(--neon-green); color: var(--neon-green);" onclick="triggerWithdraw()">Withdraw Money</button>
+        </div>
+
+        <div class="premium-card" style="text-align: center;">
+            <h4 style="color:#fff; margin-top:0;">እገዛ እና ድጋፍ (Support)</h4>
+            <p style="font-size: 13px; color:#a0aec0; line-height:1.4;">ማንኛውም አይነት ችግር ወይም ስህተት ካጋጠመዎት የአፑን ባለቤት ቀጥታ በቴሌግራም ማነጋገር ይችላሉ።</p>
+            <a href="https://t.me/wzzela" target="_blank" class="led-btn" style="display: block; text-decoration: none; animation: none; border-color: #ff9f43; color: #ff9f43;">
+                ✉ Contact Admin Support
+            </a>
+        </div>
+    </div>
+
+    <!-- ==================== POPUPS ==================== -->
+    <div class="modal" id="setup-modal">
+        <div class="modal-content">
+            <h3 style="color:#fff; margin-top:0;">Security PIN Setup</h3>
+            <p style="font-size:12px; color:#a0aec0;">ገንዘብ በሚያወጡበት ጊዜ የሚጠየቁትን ባለ 4 አሃዝ ሚስጥራዊ ቁጥር እና ቢጠፋብዎት ማገገሚያ የሚሆን የልደት አመትዎን ያስገቡ።</p>
+            <input type="password" id="pin-input" placeholder="አዲስ ባለ 4-አሃዝ PIN ያስገቡ" maxlength="4">
+            <input type="number" id="bday-input" placeholder="የልደት ዓመተ ምህረት (e.g., 2004)">
+            <button class="led-btn" style="margin-top:10px;" onclick="saveSecurityData()">Save Settings</button>
+        </div>
+    </div>
+
+    <div class="modal" id="verify-modal">
+        <div class="modal-content">
+            <h3 style="color:#fff; margin-top:0;">Authorization Needed</h3>
+            <div id="biometric-anim" style="color: var(--neon-blue); margin: 15px 0; font-weight: bold;">[ 🔒 Scanning Biometrics... ]</div>
+            <input type="password" id="verify-pin-input" placeholder="ባለ 4-አሃዝ PIN ቁጥርዎን ያስገቡ" maxlength="4">
+            <button class="led-btn" onclick="confirmWithdrawal()">Verify & Pay</button>
+            <p style="font-size: 12px; color: var(--neon-red); margin-top: 15px; cursor: pointer; text-decoration:underline;" onclick="recoverPin()">PIN ቁጥርዎ ጠፋብዎት? በልደት አመት ይመልሱ</p>
+        </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('Home', this)">Home</div>
+        <div class="nav-item" onclick="switchTab('Earn', this)">Earn</div>
+        <div class="nav-item" onclick="switchTab('Refer', this)">Refer</div>
+        <div class="nav-item" onclick="switchTab('Me', this)">Me</div>
+    </div>
+
+    <script>
+        const FIREBASE_URL = "https://faf-earning-money-default-rtdb.firebaseio.com/";
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        const userId = tg.initDataUnsafe?.user?.id || "123456";
+
+        const appTasks = [
+            { name: "Alibaba App", desc: "አፑን አውርደው ሲመዘገቡ ኮዱን ያስገቡ።", code: "ALI99", link: "https://play.google.com/store/apps/details?id=com.alibaba.intl.android.apps.poseidon" },
+            { name: "AliExpress App", desc: "የሽያጭ ማስተያያ መድረክ። ኮዱን ተጠቅመው ይመዝገቡ።", code: "AX55", link: "https://play.google.com/store/apps/details?id=com.aliexpress.client" },
+            { name: "Telebirr", desc: "የኢትዮ ቴሌኮም ይፋዊ የገንዘብ መለዋወጫ መተግበሪያ።", code: "TB771", link: "https://play.google.com/store/apps/details?id=cn.tydic.ethiopia.payer" },
+            { name: "CBE Birr", desc: "የኢትዮጵያ ንግድ ባንክ ሞባይል የኪስ ገንዘብ አፕ።", code: "CBE02", link: "https://play.google.com/store/apps/details?id=com.cbe.cbebirr" },
+            { name: "Hala App", desc: "ዕለታዊ ቀላል የዳሰሳ ጥናቶችን በመሙላት ይስሩ።", code: "HALA12", link: "https://play.google.com" },
+            { name: "Binance", desc: "የአለማችን ትልቁ የክሪፕቶ መገበያያ ስርአት።", code: "BIN88", link: "https://play.google.com/store/apps/details?id=com.binance.dev" },
+            { name: "Sweatcoin Wallet", desc: "በእግር ጉዞ ብቻ ነጥቦችን የሚያስረክብ ታማኝ አፕ።", code: "SW66", link: "https://play.google.com/store/apps/details?id=com.sweatco.app" },
+            { name: "Premise Tasks", desc: "በአካባቢዎ ያሉ ቀላል ጥያቄዎችን በመመለስ ይሸለሙ።", code: "PRM14", link: "https://play.google.com/store/apps/details?id=com.premise.android.prod" },
+            { name: "Toluna", desc: "የተለያዩ አስተያየቶችን እና ፎርሞችን በመሙላት ይስሩ።", code: "TOL77", link: "https://play.google.com/store/apps/details?id=com.toluna.influencers" },
+            { name: "Crypto Earn", desc: "ዲጂታል ሳንቲሞችን በማስቀመጥ ዕለታዊ ትርፍ ይሰብስቡ።", code: "CRYP3", link: "https://play.google.com/store/apps/details?id=co.mona.android" }
+        ];
+
+        function showCustomAlert(msg, isSuccess=true) {
+            const box = document.getElementById('custom-alert-box');
+            box.innerText = msg;
+            box.style.borderColor = isSuccess ? 'var(--neon-green)' : 'var(--neon-red)';
+            box.style.boxShadow = isSuccess ? '0 0 15px var(--neon-green)' : '0 0 15px var(--neon-red)';
+            box.style.display = 'block';
+            setTimeout(() => { box.style.display = 'none'; }, 3000);
+        }
+
+        function switchTab(pageId, element) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active-page');
+            element.classList.add('active');
+        }
+
+        function renderApps() {
+            const container = document.getElementById('apps-container');
+            container.innerHTML = "";
+            appTasks.forEach(app => {
+                const div = document.createElement('div');
+                div.className = "app-task-card";
+                div.innerHTML = `
+                    <div class="app-info">
+                        <h4>${app.name}</h4>
+                        <p>${app.desc}</p>
+                        <span style="font-size:12px; color:var(--neon-blue);">Code: <b>${app.code}</b></span>
+                    </div>
+                    <div class="app-actions">
+                        <a class="action-link" href="${app.link}" target="_blank">↗ Get App</a>
+                        <button class="copy-btn" onclick="copyText('${app.code}')">Copy</button>
+                        <button class="submit-proof-btn" onclick="submitProof()">Submit Proof</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function copyText(txt) {
+            navigator.clipboard.writeText(txt);
+            showCustomAlert("ኮዱ በተሳካ ሁኔታ ተገልብጧል: " + txt);
+        }
+
+        function submitProof() {
+            showCustomAlert("ማረጋገጫ ለመስጠት ስክሪንሻትዎን ወደ ዋናው ቦት ይላኩ!", true);
+            setTimeout(() => { window.open("https://t.me/wzzela", "_blank"); }, 1500);
+        }
+
+        async function loadUserData() {
+            try {
+                const res = await fetch(`${FIREBASE_URL}users/${userId}.json`);
+                const user = await res.json();
+                if(user) {
+                    const bal = parseFloat(user.balance || 0).toFixed(2);
+                    document.getElementById('user-balance').innerText = bal;
+                    document.getElementById('ad-counter').innerText = `Ads Watched: ${user.ads_count || 0} / 15`;
+                    document.getElementById('stat-ads').innerText = user.ads_count || 0;
+                    document.getElementById('stat-inv').innerText = user.total_invites || 0;
+                    document.getElementById('ref-link').innerText = `https://t.me/YourBotNameBot?start=${userId}`;
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function watchAdVideo() {
+            const res = await fetch(`${FIREBASE_URL}users/${userId}.json`);
+            const user = await res.json();
+            let currentAds = user?.ads_count || 0;
+            if(currentAds >= 15) {
+                showCustomAlert("የዕለቱ የ 15 ማስታወቂያ ገደብ አልቋል! ነገ ይመለሱ።", false);
+                return;
+            }
+            currentAds++;
+            let currentBalance = parseFloat(user?.balance || 0) + 1.50; 
+            await fetch(`${FIREBASE_URL}users/${userId}.json`, {
+                method: 'PATCH',
+                body: JSON.stringify({ balance: currentBalance, ads_count: currentAds })
+            });
+            showCustomAlert("ድንቅ ነው! +1.50 ETB ወደ አካውንትዎ ተጨምሯል።");
+            loadUserData();
+        }
+
+        async function triggerDailyBonus() {
+            showCustomAlert("Daily Check-in Bonus Claimed! +2.00 ETB");
+            const res = await fetch(`${FIREBASE_URL}users/${userId}.json`);
+            const user = await res.json();
+            let currentBalance = parseFloat(user?.balance || 0) + 2.00;
+            await fetch(`${FIREBASE_URL}users/${userId}.json`, {
+                method: 'PATCH',
+                body: JSON.stringify({ balance: currentBalance })
+            });
+            loadUserData();
+        }
+
+        function openPinSetup() { document.getElementById('setup-modal').style.display = 'flex'; }
+        
+        function triggerWithdraw() {
+            document.getElementById('verify-modal').style.display = 'flex';
+            setTimeout(() => { document.getElementById('biometric-anim').innerText = "✔ Biometrics Matched (ፊንገርፕሪንት ጸድቋል)"; }, 2000);
+        }
+
+        async function saveSecurityData() {
+            const pin = document.getElementById('pin-input').value;
+            const bday = document.getElementById('bday-input').value;
+            if(pin.length !== 4 || !bday) { showCustomAlert("እባክዎ ባለ 4 አሃዝ ፒን እና አመተ ምህረት በትክክል ያስገቡ!", false); return; }
+            await fetch(`${FIREBASE_URL}users/${userId}.json`, {
+                method: 'PATCH',
+                body: JSON.stringify({ pin: pin, bday_year: bday })
+            });
+            showCustomAlert("ሚስጥራዊ የደህንነት ፒን ቁጥርዎ ተቀምጧል!");
+            document.getElementById('setup-modal').style.display = 'none';
+        }
+
+        async function confirmWithdrawal() {
+            const enteredPin = document.getElementById('verify-pin-input').value;
+            const res = await fetch(`${FIREBASE_URL}users/${userId}.json`);
+            const user = await res.json();
+            if(user?.pin === enteredPin) {
+                showCustomAlert("PIN ቁጥርዎ ትክክል ነው! የክፍያ ጥያቄው ወደ ባክኤንድ ተልኳል።");
+                document.getElementById('verify-modal').style.display = 'none';
+            } else { showCustomAlert("የገቡት PIN ቁጥር የተሳሳተ ነው!", false); }
+        }
+
+        async function recoverPin() {
+            const verifyYear = prompt("መለያዎን ለመክፈት ያስመዘገቡትን የልደት ዓመተ ምህረት ያስገቡ:");
+            const res = await fetch(`${FIREBASE_URL}users/${userId}.json`);
+            const user = await res.json();
+            if(user?.bday_year === verifyYear) {
+                alert(`ማረጋገጫው አልፏል! የእርስዎ መለያ PIN ቁጥር፡ ${user.pin} ነው።`);
+            } else { showCustomAlert("ዓመተ ምህረቱ አልተዛመደም! ማረጋገጥ አልተቻለም።", false); }
+        }
+
+        window.onload = () => { loadUserData(); renderApps(); };
+    </script>
+</body>
+</html>
+

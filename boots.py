@@ -7,7 +7,7 @@ import os
 import threading
 
 # ==================== 1. ያንተ መረጃዎች (እነዚህን ብቻ ቀይር) ====================
-BOT_TOKEN = "YOUR_BOT_TOKEN_HERE"          # የቦትህ ቶክን
+BOT_TOKEN = "8366647485:AAFZbHSaLgVGCBNw2PiS2LpEnphFv9MAeMU"          # የቦትህ ቶክን
 CHANNEL_ID = "@YOUR_CHANNEL_USERNAME"      # የቻናልህ ማስተላለፊያ (e.g., @mychannel)
 ADMIN_CHAT_ID = "YOUR_ADMIN_CHAT_ID"       # ያንተ የቴሌግራም ID
 FIREBASE_URL = "https://faf-earning-money-default-rtdb.firebaseio.com/" # የፌርቤዝ ሊንክ

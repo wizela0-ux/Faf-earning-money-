@@ -1,1 +1,5 @@
+pytelegrambotapi
+requests
+flask
+gunicorn
 

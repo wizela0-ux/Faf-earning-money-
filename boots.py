@@ -116,14 +116,14 @@ def daily_bonus():
             "message": "❌ ለዛሬ የ FAF Coin ቦነስህን ወስደሃል። እባክህ ነገ ተመለስ!"
         }), 400
         
-    user_info['balance'] = user_info.get('balance', 0.0) + 2.0
+    user_info['balance'] = user_info.get('balance', 0.0) + 4.0
     user_info['last_bonus'] = today
     
     update_user_data(user_id, user_info)
     
     return jsonify({
         "success": True, 
-        "message": "🎁 ✅ የዛሬው 2.00 FAF Coins ቦነስዎ ተጨምሯል!", 
+        "message": "🎁 ✅ የዛሬው 4.00 FAF Coins ቦነስዎ ተጨምሯል!", 
         "new_balance": user_info['balance']
     })
 

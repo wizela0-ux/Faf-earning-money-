@@ -8,7 +8,7 @@ import requests
 app = Flask(__name__)
 CORS(app)
 
-# --- የቴሌግราม መረጃዎች ማዋቀሪያ ---
+# --- የቴሌግራም መረጃዎች ማዋቀሪያ ---
 BOT_TOKEN = "8366647485:AAFZbHSaLgVGCBNw2PiS2LpEnphFv9MAeMU" 
 CHANNEL_ID = "https://t.me/FAF_Earning_money"      
 ADMIN_CHAT_ID = "8125688786"     
@@ -20,7 +20,7 @@ FIREBASE_URL = "https://faf-earning-money-default-rtdb.firebaseio.com/"
 # 📌 ትክክለኛው የአዲሱ ቦትህ ዩዘርኔም (ያለ @ ምልክት)
 BOT_USERNAME = "FAF_earning_money_bot" 
 
-# 🔗 ያንተ የ Render ሊንክ (ከሎጉ ላይ የተወሰደ)
+# 🔗 ያንተ የ Render ሊንክ
 RENDER_URL = "https://faf-earning-money.onrender.com"
 
 def get_user_data(user_id):
@@ -78,17 +78,24 @@ def handle_start(message):
 # 🌐 የዌብሁክ መቀበያ መስመር (Route)
 @app.route('/' + BOT_TOKEN, methods=['POST'])
 def getMessage():
-    json_string = request.get_data().decode('utf-8')
-    update = telebot.types.Update.de_json(json_string)
-    bot.process_new_updates([update])
-    return "!", 200
+    if request.headers.get('content-type') == 'application/json':
+        json_string = request.get_data().decode('utf-8')
+        update = telebot.types.Update.de_json(json_string)
+        bot.process_new_updates([update])
+        return "OK", 200
+    return "Forbidden", 403
 
 @app.route('/')
 def home():
-    # ሰርቨሩ ሲነሳ ዌብሁኩን በራስ-ሰር ቴሌግራም ላይ ሴት ያደርገዋል
-    bot.remove_webhook()
-    bot.set_webhook(url=RENDER_URL + '/' + BOT_TOKEN)
     return "FAF Hub Server with Webhook is active and running beautifully!"
+
+# 🎯 ሰርቨሩ ልክ እንደተነሳ ዌብሁኩን በቴሌግራም ላይ ሴት ማድረጊያ ቋሚ ሲስተም
+try:
+    bot.remove_webhook()
+    bot.set_webhook(url=f"{RENDER_URL}/{BOT_TOKEN}")
+    print("✅ Webhook successfully set up on Telegram!")
+except Exception as e:
+    print(f"❌ Error setting up webhook: {e}")
 
 # 2. የ FAF Coin ዕለታዊ ቦነስ መቆለፊያ ህግ
 @app.route('/api/daily-bonus', methods=['POST'])

@@ -8,21 +8,21 @@ import requests
 app = Flask(__name__)
 CORS(app)
 
-# --- የቴሌግራም መረጃዎች ማዋቀሪያ ---
+# --- 1. አንተ የሰጠኸኝ ትክክለኛ መረጃዎች ማዋቀሪያ ---
 BOT_TOKEN = "8366647485:AAFZbHSaLgVGCBNw2PiS2LpEnphFv9MAeMU" 
-CHANNEL_ID = "https://t.me/FAF_Earning_money"      
-ADMIN_CHAT_ID = "8125688786"     
+CHANNEL_ID = "-1004333886907"  # የክፍያ ጥያቄዎች የሚላኩበት ቻናል ID
+ADMIN_CHAT_ID = "8125688786"   # ያንተ የግል ቴሌግራም ID
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
-# የ Firebase Realtime Database ሊንክህ
-FIREBASE_URL = "https://faf-earning-money-default-rtdb.firebaseio.com/"
-# 📌 ትክክለኛው የአዲሱ ቦትህ ዩዘርኔም (ያለ @ ምልክት)
-BOT_USERNAME = "FAF_earning_money_bot" 
-
-# 🔗 ያንተ የ Render ሊንክ
+# የ Firebase Realtime Database ዋና ሊንክህ
+FIREBASE_URL = "https://faf-earning-money-default-rtdb.firebaseio.com"
+# የቦትህ ትክክለኛው ዩዘርኔም (ያለ @ ምልክት)
+BOT_USERNAME = "FAF_Earning_money_bot" 
+# ያንተ የ Render ዋና ድህረ-ገጽ ሊንክ
 RENDER_URL = "https://faf-earning-money.onrender.com"
 
+# --- 2. የ Firebase መረጃ ማንበቢያ እና መፃፊያ ረዳት ፈንክሽኖች ---
 def get_user_data(user_id):
     res = requests.get(f"{FIREBASE_URL}/users/{user_id}.json")
     if res.status_code == 200 and res.json():
@@ -32,30 +32,33 @@ def get_user_data(user_id):
 def update_user_data(user_id, data):
     requests.put(f"{FIREBASE_URL}/users/{user_id}.json", json=data)
 
-# 🔄 1. ቴሌግራም ላይ ሰው /start ሲል ሪፈራል እና ቀን የሚመዘግበው ዋናው ክፍል
+# --- 3. ቴሌግራም ላይ ሰው /start ሲል የሚመዘገብበት ዋናው ክፍል ---
 @bot.message_handler(commands=['start'])
 def handle_start(message):
     user_id = str(message.from_user.id)
     username = message.from_user.username or "User"
-    text = message.text  
+    text = message.text  # ይህ /start 1234567 የተባለውን የጋባዥ ID ይይዛል
     
     today = datetime.date.today().isoformat()
     user_info = get_user_data(user_id)
     
+    # 🎯 ተጠቃሚው በዴታቤዙ ውስጥ ከሌለ (ፍጹም አዲስ ሰው ከሆነ) ብቻ ይመዘገባል
     if not user_info:
         user_info = {
             "balance": 0.0,
             "ads_count": 0,
             "total_invites": 0,
-            "join_date": today,  
+            "join_date": today,  # 👈 ለታስኮች መክፈቻ ዋናው ወሳኝ መረጃ!
             "username": username
         }
         
+        # 🔗 ሰውየው በሪፈራል ሊንክ የመጣ ከሆነ እና ራሱን ካልጋበዘ
         if len(text.split()) > 1:
             referrer_id = text.split()[1]
             if referrer_id != user_id:
                 ref_data = get_user_data(referrer_id)
                 if ref_data:
+                    # ለጋባዡ +5.00 ETB እና 1 ሪፈራል እንጨምራለን
                     ref_data['balance'] = ref_data.get('balance', 0.0) + 5.0
                     ref_data['total_invites'] = ref_data.get('total_invites', 0) + 1
                     update_user_data(referrer_id, ref_data)
@@ -67,15 +70,16 @@ def handle_start(message):
                         
         update_user_data(user_id, user_info)
     
+    # ለሰውየው ወደ አፑ መግቢያ እና የራሱን መጋበዣ ሊንክ መላክ
     welcome_msg = (
         f"👋 እንኳን ወደ FAF Earning Hub በሰላም መጡ!\n\n"
         f"ከታች ያለውን ሊንክ በመጫን በቀላሉ ማስታወቂያዎችን በማየት እና ታስኮችን በመስራት ገንዘብ ማግኘት ይጀምሩ።\n\n"
-        f"🔗 የእርስዎ መጋበዣ ሊንክ፡\n"
+        f"🔗 የእርስዎ መጋበዣ ሊንክ፦\n"
         f"https://t.me/{BOT_USERNAME}?start={user_id}"
     )
     bot.reply_to(message, welcome_msg)
 
-# 🌐 የዌብሁክ መቀበያ መስመር (Route)
+# --- 4. የዌብሁክ መቀበያ መስመሮች (API Routes) ---
 @app.route('/' + BOT_TOKEN, methods=['POST'])
 def getMessage():
     if request.headers.get('content-type') == 'application/json':
@@ -87,17 +91,15 @@ def getMessage():
 
 @app.route('/')
 def home():
-    return "FAF Hub Server with Webhook is active and running beautifully!"
+    # ሰርቨሩ በብሮውዘር ሲከፈት ዌብሁኩን በራስ-ሰር ቴሌግራም ላይ ይቆልፈዋል
+    try:
+        bot.remove_webhook()
+        bot.set_webhook(url=f"{RENDER_URL}/{BOT_TOKEN}")
+        return "FAF Hub Server with Webhook is active and running beautifully!"
+    except Exception as e:
+        return f"Webhook error: {e}", 500
 
-# 🎯 ሰርቨሩ ልክ እንደተነሳ ዌብሁኩን በቴሌግራም ላይ ሴት ማድረጊያ ቋሚ ሲስተም
-try:
-    bot.remove_webhook()
-    bot.set_webhook(url=f"{RENDER_URL}/{BOT_TOKEN}")
-    print("✅ Webhook successfully set up on Telegram!")
-except Exception as e:
-    print(f"❌ Error setting up webhook: {e}")
-
-# 2. የ FAF Coin ዕለታዊ ቦነስ መቆለፊያ ህግ
+# --- 5. የ FAF Coin ዕለታዊ ቦነስ API ---
 @app.route('/api/daily-bonus', methods=['POST'])
 def daily_bonus():
     data = request.json
@@ -125,7 +127,7 @@ def daily_bonus():
         "new_balance": user_info['balance']
     })
 
-# 3. የክፍያ መጠየቂያ (Withdraw)
+# --- 6. የክፍያ መጠየቂያ (Withdraw) API ---
 @app.route('/api/withdraw', methods=['POST'])
 def withdraw():
     data = request.json
@@ -172,7 +174,9 @@ def withdraw():
         )
     
     try:
+        # ወደ ቻናሉ መላክ
         bot.send_message(CHANNEL_ID, msg_text, parse_mode="Markdown")
+        # ላንተ ለአድሚኑ ኖቲፊኬሽን መላክ
         bot.send_message(ADMIN_CHAT_ID, f"🔔 አዲስ ትዕዛዝ መጥቷል! አይነት: {method}፣ መጠን: {coin_amount} ETB")
         
         user_info['balance'] = current_balance - coin_amount

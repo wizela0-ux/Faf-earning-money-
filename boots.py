@@ -1,140 +1,126 @@
-import telebot
-from telebot import types
-import requests
-import json
-from flask import Flask, request
 import os
-import threading
+import datetime
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+import telebot
+import requests
 
-# ==================== 1. ያንተ መረጃዎች (እነዚህን ብቻ ቀይር) ====================
-BOT_TOKEN = "8366647485:AAFZbHSaLgVGCBNw2PiS2LpEnphFv9MAeMU"          # የቦትህ ቶክን
-CHANNEL_ID = "@YOUR_CHANNEL_USERNAME"      # የቻናልህ ማስተላለፊያ (e.g., @mychannel)
-ADMIN_CHAT_ID = "YOUR_ADMIN_CHAT_ID"       # ያንተ የቴሌግራም ID
-FIREBASE_URL = "https://faf-earning-money-default-rtdb.firebaseio.com/" # የፌርቤዝ ሊንክ
-WEB_APP_URL = "https://faf-premium-app.vercel.app" # ቨርሰል ላይ የሰቀልከው አዲሱ ሊንክ
+app = Flask(__name__)
+CORS(app)
+
+# --- እነዚህን መረጃዎች በራስህ መረጃዎች ተካ ---
+BOT_TOKEN = "የአንተ_ትክክለኛ_የቦት_ቶክን"  # ከ BotFather ያገኘኸው
+CHANNEL_ID = "@የአንተ_ቻናል_ዩዘርኔም"      # ለምሳሌ: @faf_earning
+ADMIN_CHAT_ID = "የአንተ_ቴሌግራም_ID"     # ያንተ የግል ቴሌግራም ID ቁጥር
 
 bot = telebot.TeleBot(BOT_TOKEN)
-app = Flask(__name__)
 
-# ሰርቨሩ በቋሚነት እንዲነቃቃ የተሰራ ቀላል ገጽ
+# የ Firebase Realtime Database ሊንክህ
+FIREBASE_URL = "https://faf-earning-money-default-rtdb.firebaseio.com/"
+
+def get_user_data(user_id):
+    res = requests.get(f"{FIREBASE_URL}/users/{user_id}.json")
+    if res.status_code == 200 and res.json():
+        return res.json()
+    return {"balance": 0.0, "last_bonus": ""}
+
+def update_user_data(user_id, data):
+    requests.put(f"{FIREBASE_URL}/users/{user_id}.json", json=data)
+
 @app.route('/')
 def home():
-    return "FAF Bot is running 24/7!"
+    return "FAF Hub Server with Firebase is active and running beautifully!"
 
-# ==================== 2. ቦቱ ሲነሳ (/start) ====================
-@bot.message_handler(commands=['start'])
-def send_welcome(message):
-    user_id = str(message.from_user.id)
-    username = message.from_user.username if message.from_user.username else "User"
+# 1. የ FAF Coin ዕለታዊ ቦነስ መቆለፊያ ህግ (በ 24 ሰአት አንድ ጊዜ)
+@app.route('/api/daily-bonus', methods=['POST'])
+def daily_bonus():
+    data = request.json
+    user_id = str(data.get('user_id'))
+    today = datetime.date.today().isoformat()
     
-    user_ref = requests.get(f"{FIREBASE_URL}users/{user_id}.json").json()
-    if not user_ref:
-        new_user = {
-            "username": username,
-            "balance": 0.00,
-            "ads_count": 0,
-            "total_invites": 0,
-            "join_date": "2026-07-24"
-        }
-        requests.patch(f"{FIREBASE_URL}users/{user_id}.json", json.dumps(new_user))
+    user_info = get_user_data(user_id)
+    
+    if user_info.get('last_bonus') == today:
+        return jsonify({
+            "success": False, 
+            "message": "❌ ለዛሬ የ FAF Coin ቦነስህን ወስደሃል። እባክህ ነገ ተመለስ!"
+        }), 400
+        
+    # በኮይን ስሌት መሠረት 2 FAF Coins (የ 1 ብር ዋጋ) እንሰጣለን
+    user_info['balance'] = user_info.get('balance', 0.0) + 2.0
+    user_info['last_bonus'] = today
+    
+    update_user_data(user_id, user_info)
+    
+    return jsonify({
+        "success": True, 
+        "message": "🎁 ✅ የዛሬው 2.00 FAF Coins ቦነስዎ ተጨምሯል!", 
+        "new_balance": user_info['balance']
+    })
 
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    web_app_info = types.WebAppInfo(WEB_APP_URL)
-    web_app_button = types.KeyboardButton(text="📱 Open FAF Hub", web_app=web_app_info)
-    markup.add(web_app_button)
+# 2. የክፍያ መጠየቂያ (Withdraw) - በባንክ፣ PUBG UC ወይም Free Fire 
+@app.route('/api/withdraw', methods=['POST'])
+def withdraw():
+    data = request.json
+    user_id = str(data.get('user_id'))
+    method = data.get('method') # 'bank', 'pubg', 'ff'
+    account = data.get('account')
+    holder_name = data.get('holder_name')
+    pin_code = data.get('pin_code')
+    coin_amount = float(data.get('amount', 400)) # 400 ኮይን ለ 60 UC
+    
+    user_info = get_user_data(user_id)
+    current_balance = user_info.get('balance', 0.0)
+    
+    if current_balance < coin_amount:
+        return jsonify({
+            "success": False,
+            "message": f"❌ በቂ ኮይን የለዎትም! ቢያንስ {coin_amount} FAF Coins ያስፈልጋል።"
+        }), 400
 
-    welcome_text = (
-        f"እንኳን ወደ FAF Earning Hub በሰላም መጡ፣ @{username}! 👋\n\n"
-        "ከታች ያለውን <b>📱 Open FAF Hub</b> የሚለውን ቁልፍ በመንካት "
-        "ማስታወቂያዎችን ማየት እና ታስኮችን መስራት መጀመር ይችላሉ።"
-    )
-    bot.send_message(message.chat.id, welcome_text, parse_mode="HTML", reply_markup=markup)
-
-# ==================== 3. የክፍያ ጥያቄ መከታተያ ====================
-@bot.message_handler(commands=['check_withdrawals'])
-def check_withdrawals(message):
-    if str(message.chat.id) != str(ADMIN_CHAT_ID):
-        return
-
+    # የመልእክት አይነትን ማስተካከል
+    if method == 'bank':
+        msg_text = (
+            f"💰 *አዲስ የባንክ ክፍያ ጥያቄ*\n\n"
+            f"👤 የተጠቃሚ ID: `{user_id}`\n"
+            f"👤 የባለቤቱ ስም: {holder_name}\n"
+            f"💳 የባንክ/ቴሌብር አካውንት: `{account}`\n"
+            f"💵 የተዋጣ መጠን: {coin_amount} FAF Coins\n"
+            f"🔐 ፒን ኮድ: የተረጋገጠ\n"
+            f"⏰ ቀን: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}"
+        )
+    else:
+        game_name = "PUBG UC" if method == 'pubg' else "Free Fire Diamond"
+        reward = "60 UC" if method == 'pubg' else "50 Diamonds"
+        msg_text = (
+            f"🎮 *አዲስ የጌም ቶፕ-አፕ ጥያቄ ({game_name})*\n\n"
+            f"👤 የተጠቃሚ ID: `{user_id}`\n"
+            f"🆔 የጌም Player ID: `{account}`\n"
+            f"👤 የጌም ስም: {holder_name}\n"
+            f"🎁 የሚሞላው: {reward}\n"
+            f"💵 የወጣው ወጪ: {coin_amount} FAF Coins\n"
+            f"🔐 ፒን ኮድ: የተረጋገጠ\n"
+            f"⏰ ቀን: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}"
+        )
+    
     try:
-        requests_ref = requests.get(f"{FIREBASE_URL}withdraw_requests.json").json()
-        if not requests_ref:
-            bot.send_message(ADMIN_CHAT_ID, "📭 በአሁኑ ሰአት ምንም አዲስ የክፍያ ጥያቄ የለም።")
-            return
-
-        for req_id, req_data in requests_ref.items():
-            user_id = req_data.get("user_id")
-            amount = req_data.get("amount")
-            method = req_data.get("method")
-            account = req_data.get("account")
-            uname = req_data.get("username", "ተጠቃሚ")
-
-            admin_msg = (
-                f"🚨 <b>አዲስ የክፍያ ጥያቄ መጥቷል!</b>\n\n"
-                f"👤 ተጠቃሚ፦ @{uname} ({user_id})\n"
-                f"💰 መጠን፦ {amount} ETB\n"
-                f"💳 ዘዴ፦ {method.upper()}\n"
-                f"📌 አካውንት ቁጥር፦ <code>{account}</code>\n"
-            )
-            
-            markup = types.InlineKeyboardMarkup()
-            approve_btn = types.InlineKeyboardButton("✅ ይከፈል (Approve)", callback_data=f"app_{req_id}_{user_id}_{amount}")
-            reject_btn = types.InlineKeyboardButton("❌ ይሰረዝ (Reject)", callback_data=f"rej_{req_id}_{user_id}_{amount}")
-            markup.add(approve_btn, reject_btn)
-            
-            bot.send_message(ADMIN_CHAT_ID, admin_msg, parse_mode="HTML", reply_markup=markup)
-
+        # ሰርቨሩ መጀመሪያ ወደ አንተ ቻናል መላኩን ያረጋግጣል
+        bot.send_message(CHANNEL_ID, msg_text, parse_mode="Markdown")
+        bot.send_message(ADMIN_CHAT_ID, f"🔔 አዲስ ትዕዛዝ መጥቷል! አይነት: {method}፣ ስም: {holder_name}")
+        
+        # የሰውየውን ኮይን ቀንሰን Firebase ላይ ሴቭ እናደርጋለን
+        user_info['balance'] = current_balance - coin_amount
+        update_user_data(user_id, user_info)
+        
+        return jsonify({
+            "success": True, 
+            "message": "✅ የክፍያ ጥያቄዎ በተሳካ ሁኔታ ተልኳል! በ 10 ሰከንዶች ውስጥ ይፈጸማል።"
+        })
     except Exception as e:
-        print(f"Error checking requests: {e}")
-
-# ==================== 4. የአድሚኑ ምርጫ (Approve / Reject) ====================
-@bot.callback_query_handler(func=lambda call: True)
-def handle_query(call):
-    data_parts = call.data.split("_")
-    action = data_parts[0]
-    req_id = data_parts[1]
-    target_user_id = data_parts[2]
-    amount = data_parts[3]
-
-    if action == "app":
-        try:
-            user_msg = f"🎉 እንኳን ደስ አለዎት! ያቀረቡት የ {amount} ETB የክፍያ ጥያቄ በአድሚኑ ጸድቆ በቴሌብር/ባንክ ተልኮልዎታል።"
-            bot.send_message(target_user_id, user_msg)
-        except:
-            pass
-        
-        try:
-            channel_msg = f"💰 <b>ስኬታማ ክፍያ!</b>\n\n👤 ተጠቃሚ፦ ID ***{target_user_id[-4:]}\n💵 መጠን፦ {amount} ETB\n⚡️ ሁኔታ፦ ተከፍሏል (Paid) ✅\n\nFAF Earning Hub ታማኝነቱ የተመሰከረለት ነው! 🚀"
-            bot.send_message(CHANNEL_ID, channel_msg, parse_mode="HTML")
-        except:
-            pass
-
-        requests.delete(f"{FIREBASE_URL}withdraw_requests/{req_id}.json")
-        bot.edit_message_text("✅ ክፍያው ጸድቋል፤ ለተጠቃሚውና ለቻናሉ መረጃው ተልኳል።", chat_id=call.message.chat.id, message_id=call.message.message_id)
-
-    elif action == "rej":
-        user_data = requests.get(f"{FIREBASE_URL}users/{target_user_id}.json").json()
-        if user_data:
-            current_bal = float(user_data.get("balance", 0))
-            requests.patch(f"{FIREBASE_URL}users/{target_user_id}.json", json.dumps({"balance": current_bal + float(amount)}))
-        
-        try:
-            bot.send_message(target_user_id, f"⚠️ ያቀረቡት የ {amount} ETB የክፍያ ጥያቄ ውድቅ ተደርጓል፤ ብሩ ወደ ቦት አካውንትዎ ተመልሷል።")
-        except:
-            pass
-
-        requests.delete(f"{FIREBASE_URL}withdraw_requests/{req_id}.json")
-        bot.edit_message_text("❌ የክፍያ ጥያቄው ውድቅ ተደርጓል፤ ብሩ ተመልሷል።", chat_id=call.message.chat.id, message_id=call.message.message_id)
-
-# ቦቱን ከበስተጀርባ ለማስነሳት
-def run_bot():
-    bot.infinity_polling()
+        return jsonify({
+            "success": False, 
+            "message": "❌ አልተላከም! የሲስተም መቆራረጥ አጋጥሟል፣ እባክዎ ድጋሚ ይሞክሩ።"
+        }), 500
 
 if __name__ == "__main__":
-    # ቦቱን በ Thread ማስነሳት (ከ Flask ጋር አብሮ እንዲሰራ)
-    bot_thread = threading.Thread(target=run_bot)
-    bot_thread.start()
-    
-    # Flask ሰርቨሩን በ Render ፖርት ላይ ማስነሳት
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=10000)

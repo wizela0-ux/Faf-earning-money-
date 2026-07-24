@@ -8,7 +8,7 @@ import requests
 app = Flask(__name__)
 CORS(app)
 
-# --- የቴሌግራም መረጃዎች ማዋቀሪያ ---
+# --- የቴሌግราม መረጃዎች ማዋቀሪያ ---
 BOT_TOKEN = "8366647485:AAFZbHSaLgVGCBNw2PiS2LpEnphFv9MAeMU" 
 CHANNEL_ID = "https://t.me/FAF_Earning_money"      
 ADMIN_CHAT_ID = "8125688786"     
@@ -18,7 +18,10 @@ bot = telebot.TeleBot(BOT_TOKEN)
 # የ Firebase Realtime Database ሊንክህ
 FIREBASE_URL = "https://faf-earning-money-default-rtdb.firebaseio.com/"
 # 📌 ትክክለኛው የአዲሱ ቦትህ ዩዘርኔም (ያለ @ ምልክት)
-BOT_USERNAME = "FAF_money_earning_money_bot" 
+BOT_USERNAME = "FAF_money_earning_bot" 
+
+# 🔗 ያንተ የ Render ሊንክ (ከሎጉ ላይ የተወሰደ)
+RENDER_URL = "https://faf-earning-money.onrender.com"
 
 def get_user_data(user_id):
     res = requests.get(f"{FIREBASE_URL}/users/{user_id}.json")
@@ -34,28 +37,25 @@ def update_user_data(user_id, data):
 def handle_start(message):
     user_id = str(message.from_user.id)
     username = message.from_user.username or "User"
-    text = message.text  # ይህ /start 1234567 የተባለውን የጋባዥ ID ይይዛል
+    text = message.text  
     
     today = datetime.date.today().isoformat()
     user_info = get_user_data(user_id)
     
-    # ተጠቃሚው በዴታቤዙ ውስጥ ከሌለ አዲስ አካውንት እንፈጥራለን
     if not user_info:
         user_info = {
             "balance": 0.0,
             "ads_count": 0,
             "total_invites": 0,
-            "join_date": today,  # 🎯 አዲስ አካውንት ታስክ እንዲመጣለት ቀኑን እዚህ መዘገብን!
+            "join_date": today,  
             "username": username
         }
         
-        # የሪፈራል (የመጋበዣ) ኮድ ካለው እና ራሱን ካልጋበዘ
         if len(text.split()) > 1:
             referrer_id = text.split()[1]
             if referrer_id != user_id:
                 ref_data = get_user_data(referrer_id)
                 if ref_data:
-                    # ለጋባዡ +5.00 ETB እና 1 ጋባዥ እንጨምራለን
                     ref_data['balance'] = ref_data.get('balance', 0.0) + 5.0
                     ref_data['total_invites'] = ref_data.get('total_invites', 0) + 1
                     update_user_data(referrer_id, ref_data)
@@ -67,18 +67,28 @@ def handle_start(message):
                         
         update_user_data(user_id, user_info)
     
-    # ለሰውየው ወደ አፑ መግቢያ ሊንክ መላክ
     welcome_msg = (
         f"👋 እንኳን ወደ FAF Earning Hub በሰላም መጡ!\n\n"
         f"ከታች ያለውን ሊንክ በመጫን በቀላሉ ማስታወቂያዎችን በማየት እና ታስኮችን በመስራት ገንዘብ ማግኘት ይጀምሩ።\n\n"
         f"🔗 የእርስዎ መጋበዣ ሊንክ፡\n"
-        f"https://t.me/{FAF_Earning_money_bot}?start={user_id}"
+        f"https://t.me/{BOT_USERNAME}?start={user_id}"
     )
     bot.reply_to(message, welcome_msg)
 
+# 🌐 የዌብሁክ መቀበያ መስመር (Route)
+@app.route('/' + BOT_TOKEN, methods=['POST'])
+def getMessage():
+    json_string = request.get_data().decode('utf-8')
+    update = telebot.types.Update.de_json(json_string)
+    bot.process_new_updates([update])
+    return "!", 200
+
 @app.route('/')
 def home():
-    return "FAF Hub Server with Firebase is active and running beautifully!"
+    # ሰርቨሩ ሲነሳ ዌብሁኩን በራስ-ሰር ቴሌግራም ላይ ሴት ያደርገዋል
+    bot.remove_webhook()
+    bot.set_webhook(url=RENDER_URL + '/' + BOT_TOKEN)
+    return "FAF Hub Server with Webhook is active and running beautifully!"
 
 # 2. የ FAF Coin ዕለታዊ ቦነስ መቆለፊያ ህግ
 @app.route('/api/daily-bonus', methods=['POST'])
@@ -130,7 +140,7 @@ def withdraw():
             "message": f"❌ በቂ ኮይን የለዎትም! ቢያንስ {coin_amount} FAF Coins ያስፈልጋል።"
         }), 400
 
-    if method == 'telebirr' or method == 'cbe' or method == 'awash':
+    if method in ['telebirr', 'cbe', 'awash']:
         msg_text = (
             f"💰 *አዲስ የባንክ/ቴሌብር ክፍያ ጥያቄ*\n\n"
             f"👤 የተጠቃሚ ID: `{user_id}`\n"
@@ -171,13 +181,5 @@ def withdraw():
             "message": "❌ አልተላከም! የሲስተም መቆራረጥ አጋጥሟል፣ እባክዎ ድጋሚ ይሞክሩ።"
         }), 500
 
-# 🔄 Render ላይ የቴሌግራም ቦቱን ከባክኤንድ ጋር አብሮ ለማስነሳት ዌብሁክ ወይም ፖሊንግ መጀመር አለበት
-import threading
-def run_bot():
-    bot.remove_webhook()
-    bot.infinity_polling(allowed_updates=telebot.util.update_types)
-
 if __name__ == "__main__":
-    # ቦቱን በተለየ Thread (መስመር) ላይ እናስነሳዋለን ሰርቨሩ እንዳይቆም
-    threading.Thread(target=run_bot, daemon=True).start()
     app.run(host="0.0.0.0", port=10000)

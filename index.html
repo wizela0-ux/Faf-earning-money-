@@ -501,7 +501,7 @@
                         ${isLocked ? `<span class="lock-status">🔒 🎯 Day ${app.dayRequired} ላይ ይከፈታል</span>` : `<span class="unlocked-status">🔓 ዝግጁ ነው (Active)</span>`}
                     </div>
                     <div class="app-actions">
-                        <div class="task-reward-tag">+${app.reward.toFixed(2)} ETB</div>
+                        <div class="task-reward-tag">+${app.reward.toFixed(2)} FAF Coin</div>
                         <a class="action-link ${isLocked ? 'disabled-link' : ''}" href="${app.link}" target="_blank">${isLocked ? '🔒 Locked' : '↗ Get App'}</a>
                         <button class="submit-proof-btn" ${isLocked ? 'disabled' : ''} onclick="submitProof()">Submit Proof</button>
                     </div>
@@ -518,7 +518,7 @@
 
         function submitProof() {
             showCustomAlert("ማረጋገጫ ለመስጠት ስክሪንሻትዎን ወደ ዋናው ቦት ይላኩ!", true);
-            setTimeout(() => { window.open("https://t.me/FAF_Earning_money_bot", "_blank"); }, 1500);
+            setTimeout(() => { window.open("https://t.me/FAF_Earning_money", "_blank"); }, 1500);
         }
 
         async function loadUserData() {

@@ -1,5 +1,4 @@
 pytelegrambotapi
-requests
 flask
 gunicorn
-
+requests

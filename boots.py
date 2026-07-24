@@ -9,9 +9,9 @@ app = Flask(__name__)
 CORS(app)
 
 # --- እነዚህን መረጃዎች በራስህ መረጃዎች ተካ ---
-BOT_TOKEN = "የአንተ_ትክክለኛ_የቦት_ቶክን"  # ከ BotFather ያገኘኸው
-CHANNEL_ID = "@የአንተ_ቻናል_ዩዘርኔም"      # ለምሳሌ: @faf_earning
-ADMIN_CHAT_ID = "የአንተ_ቴሌግራም_ID"     # ያንተ የግል ቴሌግራም ID ቁጥር
+BOT_TOKEN = "8366647485:AAFZbHSaLgVGCBNw2PiS2LpEnphFv9MAeMU"  # ከ BotFather ያገኘኸው
+CHANNEL_ID = "https://t.me/FAF_Earning_money"      # ለምሳሌ: @faf_earning
+ADMIN_CHAT_ID = "8125688786"     # ያንተ የግል ቴሌግራም ID ቁጥር
 
 bot = telebot.TeleBot(BOT_TOKEN)
 

@@ -567,16 +567,28 @@
         }
 
         async function triggerDailyBonus() {
-            const res = await fetch(`${FIREBASE_URL}users/${userId}.json`);
-            const user = await res.json();
-            let currentBalance = parseFloat(user?.balance || 0) + 4.00;
-            await fetch(`${FIREBASE_URL}users/${userId}.json`, {
-                method: 'PATCH',
-                body: JSON.stringify({ balance: currentBalance })
-            });
-            showCustomAlert("Daily Check-in Bonus Claimed! +4.00 FAF Coin");
-            loadUserData();
+    try {
+        // ወደ ፓይተን API ጥያቄ ይልካል
+        const res = await fetch("/api/daily-bonus", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user_id: userId })
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+            showCustomAlert(data.message, true);
+            loadUserData(); // ባላንሱን ከዳታቤዝ አምጥቶ እንዲያሳይ
+        } else {
+            // ዛሬ ወስደሃል የሚለውን የፓይተን መልዕክት እዚህ ያሳየዋል
+            showCustomAlert(data.message, false); 
         }
+    } catch (e) {
+        console.error(e);
+        showCustomAlert("⚠️ ስህተት ተከስቷል፣ እባክዎ ቆይተው ይሞክሩ!", false);
+    }
+}
+
 
         // --- 🔄 ተለዋዋጭ የሳጥን ፅሁፎች እና የአይዲ መቆጣጠሪያ ስክሪፕት 🔄 ---
         const accountInput = document.getElementById('account-number');

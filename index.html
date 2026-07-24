@@ -577,7 +577,6 @@
             body: JSON.stringify({ user_id: userId })
         });
         
-        // ሰርቨሩ የሰጠው ምላሽ ትክክል መሆኑን ማረጋገጫ
         if (!res.ok) {
             showCustomAlert("⚠️ ከሰርቨር ጋር መገናኘት አልተቻለም!", false);
             return;
@@ -587,7 +586,6 @@
         
         if (data.success) {
             showCustomAlert(data.message, true);
-            // ባላንሱ ወዲያው እንዲታደስ ለማድረግ
             if (typeof loadUserData === "function") {
                 loadUserData();
             }

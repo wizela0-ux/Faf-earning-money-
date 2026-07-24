@@ -1,4 +1,5 @@
-pytelegrambotapi
 flask
+flask_cors
+pytelegrambotapi
 gunicorn
 requests

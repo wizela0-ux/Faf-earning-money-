@@ -569,7 +569,7 @@
         async function triggerDailyBonus() {
     try {
         // ወደ ፓይተን API ጥያቄ ይልካል
-        const res = await fetch("/api/daily-bonus", {
+        const res = await fetch("https://faf-earning-money.onrender.com", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ user_id: userId })

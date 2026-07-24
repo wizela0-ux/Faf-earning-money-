@@ -339,7 +339,7 @@
         <div class="premium-card" style="position: relative;">
             <div class="settings-icon" onclick="openSettingsModal()" title="Settings">⚙️</div>
             <div style="text-align: center; color: #a0aec0; font-size:14px;">Total Account Balance</div>
-            <div class="balance-display"><span id="user-balance">0.00</span> ETB</div>
+            <div class="balance-display"><span id="user-balance">0.00</span> FAF Coin</div>
         </div>
 
         <!-- Direct Separate Withdraw Section -->
@@ -534,7 +534,7 @@
                     currentTotalInvites = parseInt(user.total_invites || 0);
                     document.getElementById('stat-inv').innerText = currentTotalInvites;
                     
-                    document.getElementById('ref-link').innerText = `https://t.me/FAF_Earning_moneyBot?start=${userId}`;
+                    document.getElementById('ref-link').innerText = `https://t.me/FAF_Earning_money_Bot?start=${userId}`;
                     
                     if(user.join_date) {
                         const joined = new Date(user.join_date);

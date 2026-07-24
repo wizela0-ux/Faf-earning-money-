@@ -14,6 +14,7 @@ CHANNEL_ID = "-1004333886907"  # የክፍያ ጥያቄዎች የሚላኩበት
 ADMIN_CHAT_ID = "8125688786"   # ያንተ የግል ቴሌግራም ID
 
 bot = telebot.TeleBot(BOT_TOKEN)
+bot.remove_webhook()
 
 # የ Firebase Realtime Database ዋና ሊንክህ
 FIREBASE_URL = "https://faf-earning-money-default-rtdb.firebaseio.com"

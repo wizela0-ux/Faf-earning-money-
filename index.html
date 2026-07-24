@@ -568,12 +568,27 @@
 
         async function triggerDailyBonus() {
     try {
-        // ወደ ፓይተን API ጥያቄ ይልካል
-        const res = await fetch("https://faf-earning-money.onrender.com", {
+        // በቀጥታ ያንተን የሬንደር ፓይተን API ይጠራactions
+        const res = await fetch("https://faf-earning-money.onrender.com/api/daily-bonus", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ user_id: userId })
         });
+        const data = await res.json();
+        
+        if (data.success) {
+            showCustomAlert(data.message, true);
+            loadUserData(); // አዲሱን ባላንስ ከዳታቤዝ አምጥቶ እንዲያሳይ
+        } else {
+            // ዛሬ ወስደሃል የሚለውን የፓይተን የቁጥጥር መልዕክት እዚህ ያሳየዋል
+            showCustomAlert(data.message, false); 
+        }
+    } catch (e) {
+        console.error(e);
+        showCustomAlert("⚠️ ስህተት ተከስቷል፣ እባክዎ ቆይተው ይሞክሩ!", false);
+    }
+}
+
         const data = await res.json();
         
         if (data.success) {

@@ -569,7 +569,7 @@
         async function triggerDailyBonus() {
             const res = await fetch(`${FIREBASE_URL}users/${userId}.json`);
             const user = await res.json();
-            let currentBalance = parseFloat(user?.balance || 0) + 2.00;
+            let currentBalance = parseFloat(user?.balance || 0) + 4.00;
             await fetch(`${FIREBASE_URL}users/${userId}.json`, {
                 method: 'PATCH',
                 body: JSON.stringify({ balance: currentBalance })

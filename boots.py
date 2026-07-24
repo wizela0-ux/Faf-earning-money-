@@ -18,7 +18,7 @@ bot = telebot.TeleBot(BOT_TOKEN)
 # የ Firebase Realtime Database ሊንክህ
 FIREBASE_URL = "https://faf-earning-money-default-rtdb.firebaseio.com/"
 # 📌 ትክክለኛው የአዲሱ ቦትህ ዩዘርኔም (ያለ @ ምልክት)
-BOT_USERNAME = "FAF_money_earning_bot" 
+BOT_USERNAME = "FAF_earning_money_bot" 
 
 # 🔗 ያንተ የ Render ሊንክ (ከሎጉ ላይ የተወሰደ)
 RENDER_URL = "https://faf-earning-money.onrender.com"

@@ -261,7 +261,6 @@
             transition: 0.3s;
         }
 
-        /* ያሸበረቀችው ተቆልቋይ ሜኑ ዲዛይን */
         select#payment-method {
             width: 95%;
             padding: 12px;
@@ -342,11 +341,9 @@
             <div class="balance-display"><span id="user-balance">0.00</span> FAF Coin</div>
         </div>
 
-        <!-- Direct Separate Withdraw Section -->
         <div class="premium-card">
             <h4 style="margin-top:0; color: #fff; text-align: center;">💳 ገንዘብ ማውጫ (Withdraw)</h4>
             
-            <!-- Requirement Notice Added -->
             <div style="background: rgba(0, 242, 254, 0.05); border: 1px dashed var(--neon-blue); padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 12px; text-align: left;">
                 <b style="color: var(--neon-blue); display: block; margin-bottom: 3px;">Withdrawal Requirement:</b>
                 • Minimum Amount: 400.00 FAF Coin<br>
@@ -354,14 +351,14 @@
             </div>
 
             <p style="font-size: 13px; color: var(--text-secondary); text-align: center; margin-bottom: 15px;">
-                ያሰባሰቡትን ገንዘብ በቀላሉ ወደ ቴሌብር ወይም ባንክ አካውንትዎ ያስተላልፉ።
+                ያሰባሰቡትን የ FAF Coin በቀላሉ ወደ ቴሌብር፣ ባንክ አካውንትዎ ወይም የጌም አይዲዎ ያስተላልፉ።
             </p>
             <button class="led-btn" style="border-color: var(--neon-green); color: var(--neon-green);" onclick="openWithdrawModal()">Withdraw Money Now</button>
         </div>
 
         <div class="premium-card" style="text-align: center;">
             <h4 style="color:#fff; margin-top:0;">እገዛ እና ድጋፍ (Support)</h4>
-            <p style="font-size: 13px; color:#a0aec0; line-height:1.4;">ማንኛውም አይነት ችግር ወይም ስህተት ካጋጠመዎት የአፑን ባለቤት ቀጥታ በቴሌግራም ማነጋገር ይችላሉ。</p>
+            <p style="font-size: 13px; color:#a0aec0; line-height:1.4;">ማንኛውም አይነት ችግር ወይም ስህተት ካጋጠመዎት የአፑን ባለቤት ቀጥታ በቴሌግራም ማነጋገር ይችላሉ።</p>
             <a href="https://t.me/wizzela" target="_blank" class="led-btn" style="display: block; text-decoration: none; animation: none; border-color: #ff9f43; color: #ff9f43;">
                 ✉ Contact Admin Support
             </a>
@@ -393,7 +390,7 @@
         </div>
     </div>
 
-    <!-- Withdraw Form Modal (ሙሉ በሙሉ ተሻሽሎ የደመቀው) -->
+    <!-- Withdraw Form Modal -->
     <div class="modal" id="withdraw-modal">
         <div class="modal-content" style="border-color: var(--neon-green); box-shadow: 0 0 15px rgba(0,255,135,0.2);">
             <h3 style="color:#fff; margin-top:0; text-shadow: 0 0 8px var(--neon-green);">💸 የሽልማት ማውጫ ቅጽ</h3>
@@ -409,7 +406,7 @@
             
             <input type="text" id="account-number" placeholder="የቴሌብር ስልክ ቁጥርዎን ያስገቡ (09...)">
             <input type="text" id="account-name" placeholder="የአካውንቱን ባለቤት ሙሉ ስም ያስገቡ">
-            <input type="number" id="withdraw-amount" placeholder="የሚወጣው ብር መጠን (ETB)">
+            <input type="number" id="withdraw-amount" placeholder="የሚወጣው የሳንቲም መጠን (FAF Coin)">
             
             <button class="led-btn" style="margin-top:15px; border-color: var(--neon-green); color: var(--neon-green);" onclick="proceedToVerifyWithdrawal()">ቀጥል (Continue)</button>
             <button class="led-btn" style="margin-top:10px; border-color:#475569; color:#a0aec0; animation:none;" onclick="document.getElementById('withdraw-modal').style.display='none'">ሰርዝ</button>
@@ -433,7 +430,7 @@
             <h3 style="color:#fff; margin-top:0; border-bottom: 1px solid var(--neon-red); padding-bottom:8px;">Account PIN Recovery</h3>
             <p style="font-size:13px; color:#a0aec0; margin-top:10px;">መለያዎን ለመክፈት ያስመዘገቡትን የልደት ዓመተ ምህረት ያስገቡ፡</p>
             <input type="number" id="recover-bday-input" placeholder="የልደት ዓመተ ምህረት (e.g., 2004)">
-            <input type="password" id="new-pin-input" placeholder="አዲስ ባለ 4-አሃዝ ፒን ቁፈላጊ ያስገቡ" maxlength="4" style="display:none;">
+            <input type="password" id="new-pin-input" placeholder="አዲስ ባለ 4-አሃዝ ፒን ቁጥር ያስገቡ" maxlength="4" style="display:none;">
             <button class="led-btn" id="recovery-action-btn" style="margin-top:15px;" onclick="verifyRecoveryYear()">Verify Identity</button>
             <button class="led-btn" style="margin-top:10px; border-color:#475569; color:#a0aec0; animation:none;" onclick="closeRecoveryModal()">Cancel</button>
         </div>
@@ -458,14 +455,14 @@
         let currentTotalInvites = 0; 
 
         const appTasks = [
-            { name: "Alibaba App", desc: "አፑን አውርደው ምርቶችን ወደ ካርት ይጨምሩ።", reward:30.00, dayRequired: 1, link: "https://play.google.com/store/apps/details?id=com.alibaba.intl.android.apps.poseidon" },
-            { name: "AliExpress App", desc: "የሽያጭ ማስተያያ መድረክ ላይ ምርቶችን ይጎብኙ።", reward:40.00, dayRequired: 1, link: "https://play.google.com/store/apps/details?id=com.aliexpress.client" },
+            { name: "Alibaba App", desc: "አፑን አውርደው ምርቶችን ወደ ካርት ይጨምሩ።", reward: 30.00, dayRequired: 1, link: "https://play.google.com/store/apps/details?id=com.alibaba.intl.android.apps.poseidon" },
+            { name: "AliExpress App", desc: "የሽያጭ ማስተያያ መድረክ ላይ ምርቶችን ይጎብኙ።", reward: 40.00, dayRequired: 1, link: "https://play.google.com/store/apps/details?id=com.aliexpress.client" },
             { name: "Telebirr SuperApp", desc: "የኢትዮ ቴሌኮም ይፋዊ የገንዘብ መተግበሪያ።", reward: 50.00, dayRequired: 3, link: "https://play.google.com/store/apps/details?id=cn.tydic.ethiopia.payer" },
             { name: "CBE Birr Wallet", desc: "የኢትዮጵያ ንግድ ባንክ የሞባይል ኪስ ገንዘብ አፕ።", reward: 60.00, dayRequired: 3, link: "https://play.google.com/store/apps/details?id=com.cbe.cbebirr" },
             { name: "Hala Surveys", desc: "ዕለታዊ ቀላል የዳሰሳ ጥናቶችን በመሙላት ይስሩ።", reward: 90.00, dayRequired: 5, link: "https://play.google.com" },
             { name: "Premise Tasks", desc: "በአካባቢዎ ያሉ ቀላል ጥያቄዎችን በመመለስ ይሸለሙ።", reward: 120.00, dayRequired: 7, link: "https://play.google.com/store/apps/details?id=com.premise.android.prod" },
             { name: "Toluna Influencers", desc: "የተለያዩ አስተያየቶችን እና ፎርሞችን በመሙላት ይስሩ።", reward: 170.00, dayRequired: 10, link: "https://play.google.com/store/apps/details?id=com.toluna.influencers" },
-            { name: "Sweatcoin Walking", desc: "በእግር ጉዞ ብቻ ነጥቦችን የሚያስረክብ ታማኝ አፕ።", reward:220.00, dayRequired: 15, link: "https://play.google.com/store/apps/details?id=com.sweatco.app" },
+            { name: "Sweatcoin Walking", desc: "በእግር ጉዞ ብቻ ነጥቦችን የሚያስረክብ ታማኝ አፕ።", reward: 220.00, dayRequired: 15, link: "https://play.google.com/store/apps/details?id=com.sweatco.app" },
             { name: "Crypto Earn Platform", desc: "ዲጂታል ሳንቲሞችን በማስቀመጥ ዕለታዊ ትርፍ ይሰብስቡ።", reward: 290.00, dayRequired: 20, link: "https://play.google.com/store/apps/details?id=co.mona.android" },
             { name: "Binance Global", desc: "የአለማችን ትልቁ የክሪፕቶ መገበያያ ስርአት ምዝገባ።", reward: 360.00, dayRequired: 30, link: "https://play.google.com/store/apps/details?id=com.binance.dev" }
         ];
@@ -562,72 +559,41 @@
                 method: 'PATCH',
                 body: JSON.stringify({ balance: currentBalance, ads_count: currentAds })
             });
-            showCustomAlert("ድንቅ ነው! +3 FAF Coin ወደ አካውንትዎ ተጨምሯል።");
+            showCustomAlert("ድንቅ ነው! +1.50 FAF Coin ወደ አካውንትዎ ተጨምሯል።");
             loadUserData();
         }
 
         async function triggerDailyBonus() {
-    try {
-        const res = await fetch("https://faf-earning-money.onrender.com/api/daily-bonus", {
-            method: "POST",
-            headers: { 
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            },
-            body: JSON.stringify({ user_id: userId })
-        });
-        
-        if (!res.ok) {
-            showCustomAlert("⚠️ ከሰርቨር ጋር መገናኘት አልተቻለም!", false);
-            return;
-        }
+            try {
+                const res = await fetch("https://faf-earning-money.onrender.com/api/daily-bonus", {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+                    body: JSON.stringify({ user_id: userId })
+                });
+                
+                if (!res.ok) {
+                    showCustomAlert("⚠️ ከሰርቨር ጋር መገናኘት አልተቻለም!", false);
+                    return;
+                }
 
-        const data = await res.json();
-        
-        if (data.success) {
-            showCustomAlert(data.message, true);
-            if (typeof loadUserData === "function") {
-                loadUserData();
+                const data = await res.json();
+                
+                if (data.success) {
+                    showCustomAlert(data.message, true);
+                    if (typeof loadUserData === "function") {
+                        loadUserData();
+                    }
+                } else {
+                    showCustomAlert(data.message, false); 
+                }
+            } catch (e) {
+                console.error("Error detailed:", e);
+                showCustomAlert("⚠️ ስህተት ተከስቷል፣ እባክዎ ቆይተው ይሞክሩ!", false);
             }
-        } else {
-            showCustomAlert(data.message, false); 
         }
-    } catch (e) {
-        console.error("Error detailed:", e);
-        showCustomAlert("⚠️ ስህተት ተከስቷል፣ እባክዎ ቆይተው ይሞክሩ!", false);
-    }
-}
-
-        const data = await res.json();
-        
-        if (data.success) {
-            showCustomAlert(data.message, true);
-            loadUserData(); // አዲሱን ባላንስ ከዳታቤዝ አምጥቶ እንዲያሳይ
-        } else {
-            // ዛሬ ወስደሃል የሚለውን የፓይተን የቁጥጥር መልዕክት እዚህ ያሳየዋል
-            showCustomAlert(data.message, false); 
-        }
-    } catch (e) {
-        console.error(e);
-        showCustomAlert("⚠️ ስህተት ተከስቷል፣ እባክዎ ቆይተው ይሞክሩ!", false);
-    }
-}
-
-        const data = await res.json();
-        
-        if (data.success) {
-            showCustomAlert(data.message, true);
-            loadUserData(); // ባላንሱን ከዳታቤዝ አምጥቶ እንዲያሳይ
-        } else {
-            // ዛሬ ወስደሃል የሚለውን የፓይተን መልዕክት እዚህ ያሳየዋል
-            showCustomAlert(data.message, false); 
-        }
-    } catch (e) {
-        console.error(e);
-        showCustomAlert("⚠️ ስህተት ተከስቷል፣ እባክዎ ቆይተው ይሞክሩ!", false);
-    }
-}
-
 
         // --- 🔄 ተለዋዋጭ የሳጥን ፅሁፎች እና የአይዲ መቆጣጠሪያ ስክሪፕት 🔄 ---
         const accountInput = document.getElementById('account-number');
@@ -637,7 +603,6 @@
         function handlePaymentMethodChange() {
             const method = paymentMethod.value;
 
-            // መጀመሪያ የሳጥኖቹን ከለር ወደ ነባሪ መመለስ
             accountInput.style.borderColor = "#30363d";
             accountInput.style.boxShadow = "none";
 
@@ -652,11 +617,11 @@
                 nameInput.placeholder = "የአካውንቱን ባለቤት ሙሉ ስም ያስገቡ";
             } 
             else if (method === 'pubg') {
-                nameInput.style.display = "none"; // ፐብጂ ላይ ስም አያስፈልግም፣ በአይዲ ብቻ!
-                accountInput.placeholder = " የፐብጂ (PUBG)  ID ያስገቡ";
+                nameInput.style.display = "none"; 
+                accountInput.placeholder = " የፐብጂ (PUBG) ID ያስገቡ";
             } 
             else if (method === 'ff') {
-                nameInput.style.display = "none"; // ፍሪ ፋየር ላይ ስም አያስፈልግም፣ በአይዲ ብቻ!
+                nameInput.style.display = "none"; 
                 accountInput.placeholder = "የፍሪ ፋየር (Free Fire) Player ID ያስገቡ";
             }
             
@@ -726,7 +691,7 @@
             }
 
             if (!account || isNaN(amount)) {
-                showCustomAlert("እባክዎ የሚያስፈልጉ መረጃዎችን እና የብር መጠን ይሙሉ!", false);
+                showCustomAlert("እባክዎ የሚያስፈልጉ መረጃዎችን እና የሳንቲም መጠን ይሙሉ!", false);
                 return;
             }
 
@@ -735,7 +700,7 @@
                 return;
             }
 
-            if (amount < 200) {
+            if (amount < 400) {
                 showCustomAlert("⚠️ Withdrawal Requirement: The minimum withdrawal amount is 400.00 FAF Coin!", false);
                 return;
             }
@@ -755,7 +720,7 @@
 
             let maxAllowed = currentBal - 50;
             if (currentBal - amount < 50) {
-                showCustomAlert("⚠️ Incomplete Balance! The maximum amount you can withdraw is " + (maxAllowed < 0 ? 0 : maxAllowed).toFixed(2) + " ETB (50 ETB must remain in your account).", false);
+                showCustomAlert("⚠️ Incomplete Balance! The maximum amount you can withdraw is " + (maxAllowed < 0 ? 0 : maxAllowed).toFixed(2) + " FAF Coin (50 FAF Coin must remain in your account).", false);
                 return;
             }
 
@@ -797,6 +762,7 @@
                     account: pendingWithdrawData.account,
                     holder_name: pendingWithdrawData.holder_name,
                     amount: pendingWithdrawData.amount,
+                    currency: "FAF Coin",
                     timestamp: new Date().toISOString()
                 };
 
@@ -810,7 +776,7 @@
                     body: JSON.stringify({ balance: newBalance })
                 });
 
-                showCustomAlert(`ስኬታማ! የ ${pendingWithdrawData.amount} ETB የክፍያ ጥያቄ ተልኳል።`, true);
+                showCustomAlert(`ስኬታማ! የ ${pendingWithdrawData.amount} FAF Coin የክፍያ ጥያቄ ተልኳል።`, true);
                 document.getElementById('verify-modal').style.display = 'none';
                 loadUserData();
             } else { 
@@ -843,7 +809,7 @@
             const user = await res.json();
             
             if(user?.bday_year === verifyYear) {
-                showCustomAlert("ማረጋገጫው አልፏል! አሁን አዲሱን ፒንዎን ያስገቡ。");
+                showCustomAlert("ማረጋገጫው አልፏል! አሁን አዲሱን ፒንዎን ያስገቡ።");
                 document.getElementById('recover-bday-input').style.display = "none";
                 document.getElementById('new-pin-input').style.display = "block";
                 

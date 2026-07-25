@@ -9,7 +9,7 @@ app = Flask(__name__)
 CORS(app)
 
 # --- 1. አንተ የሰጠኸኝ ትክክለኛ መረጃዎች ማዋቀሪያ ---
-BOT_TOKEN = "8366647485:AAFZbHSaLgVGCBNw2PiS2LpEnphFv9MAeMU" 
+BOT_TOKEN = "7816393565:AAHUfvHcHYlzRzmcUbuWAbvC2wl1gtkoySM" 
 CHANNEL_ID = "-1004333886907"  # የክፍያ ጥያቄዎች የሚላኩበት ቻናል ID
 ADMIN_CHAT_ID = "8125688786"   # ያንተ የግል ቴሌግራም ID
 

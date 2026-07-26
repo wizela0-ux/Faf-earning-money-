@@ -46,7 +46,8 @@ def handle_start(message):
             "profile_complete": False,
             "phone": "",
             "full_name": "",
-            "channel_checked": False
+            "channel_checked": False,
+            "pin": "1234" # Default PIN ለደህንነት
         }
         
         if len(text.split()) > 1:
@@ -69,7 +70,7 @@ def handle_start(message):
     markup.add(reg_button)
 
     welcome_msg = (
-        f"👋 እንኳን ወደ FAF Earning Hub በሰላም مጡ!\n\n"
+        f"👋 እንኳን ወደ FAF Earning Hub በሰላም መጡ!\n\n"
         f"⚠️ ማሳሰቢያ፡ አፑ ላይ የሰሩትን ገንዘብ ወጪ (Withdraw) ለማድረግ መጀመሪያ ከታች ያለውን ሰማያዊ በተን ተጭነው ስልክ ቁጥርዎን ማረጋገጥ አለብዎት!\n\n"
         f"🔗 የእርስዎ መጋበዣ ሊንክ፦\n"
         f"https://t.me/{BOT_USERNAME}?start={user_id}"
@@ -93,7 +94,6 @@ def handle_contact(message):
         update_user_data(user_id, user_info)
         bot.reply_to(message, f"✅ ስልክ ቁጥርዎ ({contact.phone_number}) በተሳካ ሁኔታ ተረጋግጧል! አሁን በሚኒ አፑ ላይ ሙሉ ስምዎን በመሙላት ስራ መጀመር ይችላሉ።")
 
-# 🔒 ደህንነቱ የተጠበቀ የ AdsGram ማስታወቂያ ማስቆጠሪያ API (ባክኤንድ ጥበቃ)
 @app.route('/api/reward-ad', methods=['POST'])
 def reward_ad():
     data = request.json
@@ -117,14 +117,12 @@ def reward_ad():
     
     return jsonify({"success": True, "balance": user_info['balance'], "ads_count": user_info['ads_count']})
 
-# 👥 የሙሉ ስም እና የሳይለንት ቻናል ቦነስ ማረጋገጫ አንድ ላይ የተዋሃደ API
 @app.route('/api/user-info/<user_id>', methods=['GET'])
 def get_secure_user_info(user_id):
     user_info = get_user_data(str(user_id))
     if not user_info:
         return jsonify({"error": "User not found"}), 404
         
-    # 🤫 ቻናሉን ጆይን ካደረጉ በሳይለንት 0.5 ሳንቲም የመጨመሪያ መስመር
     if not user_info.get('channel_checked', False):
         try:
             member = bot.get_chat_member(CHANNEL_ID, int(user_id))
@@ -137,7 +135,6 @@ def get_secure_user_info(user_id):
             
     return jsonify(user_info)
 
-# 🔗 እውነተኛ የ CPA Postback API (CPAGrip እና MyLead 1 ዶላር ሲመጣ 252 FAF Coin የሚያሰላ)
 @app.route('/api/postback', methods=['GET', 'POST'])
 def cpa_postback():
     user_id = request.args.get('subid') or request.args.get('user_id')
@@ -153,7 +150,7 @@ def cpa_postback():
         update_user_data(user_id, user_info)
         
         try:
-            bot.send_message(user_id, f"🔥 ታላቅ ዜና፦ የ CPA ታስክ/ሰርቬይ በተሳካ ሁኔታ ስለጨረሱ +{reward_coins:.2f} FAF Coin ወደ አካውንትዎ ገብቷል!")
+            bot.send_message(user_id, f"🔥 ታላቅ ዜና፦ የ CPA ታስክ በተሳካ ሁኔታ ስለጨረሱ +{reward_coins:.2f} FAF Coin ወደ አካውንትዎ ገብቷል!")
         except:
             pass
         return "Success", 200
@@ -176,24 +173,6 @@ def save_profile():
     update_user_data(user_id, user_info)
     return jsonify({"success": True, "message": "✅ ሙሉ ስምዎ ተቀምጧል!", "profile_complete": user_info.get('profile_complete', False)})
 
-@app.route('/' + BOT_TOKEN, methods=['POST'])
-def getMessage():
-    if request.headers.get('content-type') == 'application/json':
-        json_string = request.get_data().decode('utf-8')
-        update = telebot.types.Update.de_json(json_string)
-        bot.process_new_updates([update])
-        return "OK", 200
-    return "Forbidden", 403
-
-@app.route('/')
-def home():
-    try:
-        bot.remove_webhook()
-        bot.set_webhook(url=f"{RENDER_URL}/{BOT_TOKEN}")
-        return "FAF Hub Server is running beautifully with full CPA & Security setup!"
-    except Exception as e:
-        return f"Webhook error: {e}", 500
-
 @app.route('/api/daily-bonus', methods=['POST'])
 def daily_bonus():
     data = request.json
@@ -212,6 +191,7 @@ def daily_bonus():
     update_user_data(user_id, user_info)
     return jsonify({"success": True, "message": "🎁 ✅ የዛሬው 4.00 FAF Coins ቦነስዎ ተጨምሯል!"})
 
+# 🔒 አዲሱ የ PIN ማረጋገጫ እና ዊዝድሮው የተዋሃደ አስተማማኝ ባክኤንድ API
 @app.route('/api/withdraw', methods=['POST'])
 def withdraw():
     data = request.json
@@ -220,10 +200,16 @@ def withdraw():
     account = data.get('account')
     holder_name = data.get('holder_name')
     coin_amount = float(data.get('amount', 400)) 
+    user_pin = str(data.get('pin'))
     
     user_info = get_user_data(user_id)
     if not user_info:
         return jsonify({"success": False, "message": "❌ ተጠቃሚ አልተገኘም!"}), 404
+        
+    # 🔐 የፒን ቁጥር ደህንነት ማረጋገጫ በባክኤንድ በኩል
+    db_pin = str(user_info.get('pin', '1234'))
+    if user_pin != db_pin:
+        return jsonify({"success": False, "message": "❌ የገቡት የደህንነት PIN ቁጥር ስህተት ነው!"}), 401
         
     if not user_info.get('profile_complete'):
         return jsonify({
@@ -254,6 +240,24 @@ def withdraw():
         return jsonify({"success": True, "message": "✅ የክፍያ ጥያቄዎ በተሳካ ሁኔታ ተልኳል!"})
     except Exception as e:
         return jsonify({"success": False, "message": f"❌ ስህተት ተከስቷል፦ {e}"}), 500
+
+@app.route('/' + BOT_TOKEN, methods=['POST'])
+def getMessage():
+    if request.headers.get('content-type') == 'application/json':
+        json_string = request.get_data().decode('utf-8')
+        update = telebot.types.Update.de_json(json_string)
+        bot.process_new_updates([update])
+        return "OK", 200
+    return "Forbidden", 403
+
+@app.route('/')
+def home():
+    try:
+        bot.remove_webhook()
+        bot.set_webhook(url=f"{RENDER_URL}/{BOT_TOKEN}")
+        return "FAF Hub Server is running beautifully with full CPA & Security setup!"
+    except Exception as e:
+        return f"Webhook error: {e}", 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)

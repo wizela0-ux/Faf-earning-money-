@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FAF Premium Earning App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    
-    <!-- ✅ እውነተኛው የ AdsGram ማስታወቂያ ስክሪፕት ስራ ላይ ውሏል -->
     <script src="https://adsgram.ai/sdk/v1/adsgram.js"></script>
 
     <style>
@@ -18,7 +16,6 @@
             --neon-green: #00ff87;
             --neon-red: #ff416c;
             --nav-bg: #221a35;
-            --locked-bg: #2d2444;
             --text-secondary: #a0aec0;
         }
 
@@ -56,7 +53,6 @@
             padding: 20px;
             border-radius: 16px;
             margin-bottom: 15px;
-            position: relative;
         }
 
         .balance-display {
@@ -219,18 +215,18 @@
 
         <h3 style="padding-left: 5px; color: #fff; font-size: 16px;">🔥 High Paying CPA Tasks</h3>
         
-        <!-- 🎯 CPALead Offerwall (ሁሌም ክፍት) -->
+        <!-- 🎯 CPALead (በአዝራር የተቀየረ) -->
         <div class="cpa-box">
             <h4 style="margin:0 0 5px 0; color:#fff;">🎯 CPALead Offerwall 1</h4>
             <p style="font-size:12px; color:var(--text-secondary); margin-bottom:10px;">ቀላል ጥያቄዎችን በመመለስ እና አፖችን በመጫን በየደቂቃው ሳንቲም ይሰብስቡ።</p>
-            <a href="#" id="cpalead-link" target="_blank" class="led-btn" style="text-decoration:none; display:block; font-size:12px;">Open Offerwall (+50 Coins/Task)</a>
+            <button class="led-btn" id="cpalead-btn" onclick="openCpaLead()">Open Offerwall (+50 Coins)</button>
         </div>
 
-        <!-- 🔒 MyLead Premium Offers (የ 3 ቀን መቆለፊያ ያለበት) -->
+        <!-- 🔒 MyLead (በአዝራር የተቀየረ) -->
         <div class="cpa-box" id="mylead-box" style="border-color: var(--neon-green);">
             <h4 style="margin:0 0 5px 0; color:#fff;">🚀 MyLead Premium Offers</h4>
             <p style="font-size:12px; color:var(--text-secondary); margin-bottom:10px;" id="mylead-lock-msg">ፈጣን ዳሰሳዎችን በመሙላት ከፍተኛ የ FAF Coin ተከፋይ ይሁኑ።</p>
-            <a href="#" id="mylead-link" target="_blank" class="led-btn" style="text-decoration:none; display:block; font-size:12px; border-color: var(--neon-green); color: var(--neon-green);">Start Surveys</a>
+            <button class="led-btn" id="mylead-btn" style="border-color: var(--neon-green); color: var(--neon-green);" onclick="openMyLead()">Start Surveys</button>
         </div>
     </div>
 
@@ -267,7 +263,7 @@
                 • Minimum Referrals: 3 Active Users<br>
                 • Profile Status: Verified Phone & Name
             </div>
-            <button class="led-btn" style="border-color: var(--neon-green); color: var(--neon-green planetary-ring);" onclick="attemptWithdrawal()">Withdraw Money Now</button>
+            <button class="led-btn" style="border-color: var(--neon-green); color: var(--neon-green);" onclick="attemptWithdrawal()">Withdraw Money Now</button>
         </div>
     </div>
 
@@ -304,12 +300,12 @@
         tg.expand();
         const userId = tg.initDataUnsafe?.user?.id || "123456";
 
-        // ✅ AdsGram ኢንተግሬሽን መለያ ቁጥር 39851
         const AdController = window.Adsgram?.createAdListener({ blockId: "39851" });
 
         let isProfileComplete = false;
         let currentTotalInvites = 0;
         let pendingWithdrawData = {};
+        let isMyleadLocked = true;
 
         function showCustomAlert(msg, isSuccess=true) {
             const box = document.getElementById('custom-alert-box');
@@ -326,10 +322,12 @@
             element.classList.add('active');
         }
 
-        // ✅ በሰርቨር በኩል የደህንነት ስራዎችን የሚሰራ አዲስ ሎደር
+        // ✅ አስተማማኝ የዳታ መጫኛ (ሰርቨሩ ከተኝቶ ከነቃም አፑ እንዳይበላሽ ተደርጓል)
         async function loadUserData() {
             try {
                 const res = await fetch(`${BACKEND_URL}/api/user-info/${userId}`);
+                if (!res.ok) { throw new Error("Backend connection issue"); }
+                
                 const user = await res.json();
                 if(user) {
                     document.getElementById('user-balance').innerText = parseFloat(user.balance || 0).toFixed(2);
@@ -339,32 +337,27 @@
                     document.getElementById('stat-inv').innerText = currentTotalInvites;
                     document.getElementById('ref-link').innerText = `https://t.me/FAF_Earning_money_bot?start=${userId}`;
                     
-                    // 🔒 MyLead የ 3 ቀን መቆለፊያ አመክንዮ (Time-Lock)
+                    // 🔒 MyLead Time-Lock አስተዳደር
                     const joinDate = new Date(user.join_date);
                     const today = new Date();
                     const diffTime = Math.abs(today - joinDate);
                     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                     
                     const myleadBox = document.getElementById('mylead-box');
-                    const myleadLink = document.getElementById('mylead-link');
+                    const myleadBtn = document.getElementById('mylead-btn');
                     const myleadMsg = document.getElementById('mylead-lock-msg');
                     
                     if (diffDays <= 3) {
-                        myleadLink.removeAttribute('href');
-                        myleadLink.style.opacity = "0.4";
-                        myleadLink.style.pointerEvents = "none";
-                        myleadMsg.innerHTML = "🔒 <span style='color:var(--neon-red); font-weight:bold;'>ቁልፍ ነው፦</span> ከተመዘገቡ 3 ቀናት ሲሞላዎት በራሱ ይከፈታል!";
+                        isMyleadLocked = true;
+                        myleadBtn.style.opacity = "0.4";
+                        myleadMsg.innerHTML = "🔒 <span style='color:var(--neon-red); font-weight:bold;'>ቁልፍ ነው፦</span> ከተመዘገቡ 3 ቀናት ሲሞላዎት ይከፈታል!";
                         myleadBox.style.borderColor = "var(--neon-red)";
                     } else {
-                        myleadLink.setAttribute('href', `https://clicknlook.site/iframe/142fbe08-891f-11f1-84fb-129a1c289511?subid=${userId}`);
-                        myleadLink.style.opacity = "1";
-                        myleadLink.style.pointerEvents = "auto";
+                        isMyleadLocked = false;
+                        myleadBtn.style.opacity = "1";
                         myleadMsg.innerText = "ፈጣን ዳሰሳዎችን በመሙላት ከፍተኛ የ FAF Coin ተከፋይ ይሁኑ።";
                         myleadBox.style.borderColor = "var(--neon-green)";
                     }
-
-                    // ✅ የ CPALead ሊንክ ከ SubID ጋር ማገናኛ
-                    document.getElementById('cpalead-link').href = `https://www.fastrsrvr.com/wall/d5uQ?subid=${userId}`;
                     
                     isProfileComplete = user.profile_complete || false;
                     const badge = document.getElementById('profile-status-badge');
@@ -381,7 +374,26 @@
                         document.getElementById('full-name-input').value = user.full_name;
                     }
                 }
-            } catch(e) { console.error(e); }
+            } catch(e) { 
+                console.error(e);
+                showCustomAlert("⏳ ሰርቨሩ እየተነሳ ነው... እባክዎ ጥቂት ሰከንዶች ይጠብቁ!", false);
+            }
+        }
+
+        // 🎯 የ CPALead ታስክ መክፈቻ (በቴሌግራም ህጋዊ ፖፕአፕ)
+        function openCpaLead() {
+            const url = `https://www.fastrsrvr.com/wall/d5uQ?subid=${userId}`;
+            tg.openLink(url);
+        }
+
+        // 🚀 የ MyLead ታስክ መክፈቻ (በቴሌግራም ህጋዊ ፖፕአፕ)
+        function openMyLead() {
+            if (isMyleadLocked) {
+                showCustomAlert("❌ ይሄ ታስክ ገና አልተቆለፈም! መመዝገብህ 3 ቀን መሙላት አለበት።", false);
+                return;
+            }
+            const url = `https://clicknlook.site/iframe/142fbe08-891f-11f1-84fb-129a1c289511?subid=${userId}`;
+            tg.openLink(url);
         }
 
         async function saveFullName() {
@@ -402,7 +414,7 @@
 
         function attemptWithdrawal() {
             if(!isProfileComplete) {
-                showCustomAlert("⚠️ መጀመሪያ ፕሮፋይልዎን ማጠናቀቅ አለብዎት! በቦቱ ላይ ስልክዎን ያረጋግጡ፣ እዚህ ገጽ ላይ ስምዎን ይሙሉ!", false);
+                showCustomAlert("⚠️ መጀመሪያ ፕሮፋይልዎን ማጠናቀቅ አለብዎት! ቦቱ ላይ ስልክዎን ያረጋግጡ!", false);
                 return;
             }
             if(currentTotalInvites < 3) {
@@ -412,16 +424,14 @@
             document.getElementById('withdraw-modal').style.display = 'flex';
         }
 
-        // 🛡️ ፍጹም የተጠበቀ የ AdsGram ቪዲዮ ማሳያ ማስተካከያ
         async function watchAdVideo() {
             if (!AdController) {
-                showCustomAlert("የማስታወቂያ ኔትወርክ አልተጫነም! እባክዎ ኢንተርኔትዎን ቼክ ያድርጉ።", false);
+                showCustomAlert("የማስታወቂያ ኔትወርክ አልተጫነም!", false);
                 return;
             }
             showCustomAlert("የማስታወቂያ ቪዲዮ በመጫን ላይ...");
             
-            AdController.show().then(async (result) => {
-                // ማስታወቂያው ሲያልቅ ቀጥታ ወደ ሰርቨርህ ሴኩሪቲ ጥሪ ይደረጋል
+            AdController.show().then(async () => {
                 const res = await fetch(`${BACKEND_URL}/api/reward-ad`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
@@ -429,13 +439,13 @@
                 });
                 const data = await res.json();
                 if(data.success) {
-                    showCustomAlert("🎉 +1.50 FAF Coin በተሳካ ሁኔታ ተጨምሯል!");
+                    showCustomAlert("🎉 +1.50 FAF Coin ተጨምሯል!");
                     loadUserData();
                 } else {
                     showCustomAlert(data.message, false);
                 }
-            }).catch((err) => {
-                showCustomAlert("❌ ማስታወቂያው አልተጠናቀቀም ወይም ቀድመው ዘግተውታል።", false);
+            }).catch(() => {
+                showCustomAlert("❌ ማስታወቂያው አልተጠናቀቀም።", false);
             });
         }
 
@@ -455,27 +465,30 @@
             document.getElementById('verify-modal').style.display = 'flex';
         }
 
+        // ✅ ሙሉ በሙሉ ወደ ባክኤንድ የተቀየረ አስተማማኝ የ PIN ማረጋገጫ
         async function confirmWithdrawal() {
-            const pin = document.getElementById('verify-pin-input').value;
-            const resCheck = await fetch(`https://faf-earning-money-default-rtdb.firebaseio.com/users/${userId}.json`);
-            const userData = await resCheck.json();
+            const pinVal = document.getElementById('verify-pin-input').value;
+            if(!pinVal) { showCustomAlert("እባክዎ መጀመሪያ PIN ያስገቡ!", false); return; }
 
-            if(userData?.pin === pin) {
+            pendingWithdrawData.pin = pinVal; // ፒኑን ወደ ፓኬጁ መጨመር
+
+            try {
                 const req = await fetch(`${BACKEND_URL}/api/withdraw`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(pendingWithdrawData)
                 });
+                
                 const resData = await req.json();
-                if(resData.success) {
+                if(req.status === 200 && resData.success) {
                     showCustomAlert("የክፍያ ጥያቄዎ ለአድሚን ተልኳል!", true);
                     document.getElementById('verify-modal').style.display = 'none';
                     loadUserData();
                 } else {
                     showCustomAlert(resData.message, false);
                 }
-            } else {
-                showCustomAlert("የገቡት PIN ቁጥር የተሳሳተ ነው!", false);
+            } catch(err) {
+                showCustomAlert("❌ የኔትወርክ ስህተት ወይም የተሳሳተ PIN!", false);
             }
         }
 
@@ -485,14 +498,18 @@
         }
         
         async function triggerDailyBonus() {
-            const res = await fetch(`${BACKEND_URL}/api/daily-bonus`, {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ user_id: userId })
-            });
-            const d = await res.json();
-            showCustomAlert(d.message, d.success);
-            loadUserData();
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/daily-bonus`, {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({ user_id: userId })
+                });
+                const d = await res.json();
+                showCustomAlert(d.message, d.success);
+                loadUserData();
+            } catch(e) {
+                showCustomAlert("ሰርቨሩ ምላሽ አልሰጠም!", false);
+            }
         }
 
         window.onload = () => { loadUserData(); };

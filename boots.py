@@ -39,12 +39,14 @@ def handle_start(message):
         user_info = {
             "balance": 0.0,
             "ads_count": 0,
+            "last_ad_date": today,
             "total_invites": 0,
             "join_date": today,  
             "username": username,
-            "profile_complete": False,  # 👈 አዲስ የሴኩሪቲ መስመር
+            "profile_complete": False,
             "phone": "",
-            "full_name": ""
+            "full_name": "",
+            "channel_checked": False
         }
         
         if len(text.split()) > 1:
@@ -52,7 +54,7 @@ def handle_start(message):
             if referrer_id != user_id:
                 ref_data = get_user_data(referrer_id)
                 if ref_data:
-                    ref_data['balance'] = ref_data.get('balance', 0.0) + 10.0 # 👈 10.0 FAF Coin አደረግነው
+                    ref_data['balance'] = ref_data.get('balance', 0.0) + 10.0
                     ref_data['total_invites'] = ref_data.get('total_invites', 0) + 1
                     update_user_data(referrer_id, ref_data)
                     try:
@@ -62,20 +64,18 @@ def handle_start(message):
                         
         update_user_data(user_id, user_info)
     
-    # 📱 ለሴኩሪቲ ስልክ ቁጥር መጠየቂያ በተን ማዘጋጀት
     markup = telebot.types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
     reg_button = telebot.types.KeyboardButton(text="📱 ስልክ ቁጥርህን በቴሌግራም አረጋግጥ (Verify Phone)", request_contact=True)
     markup.add(reg_button)
 
     welcome_msg = (
-        f"👋 እንኳን ወደ FAF Earning Hub በሰላም መጡ!\n\n"
+        f"👋 እንኳን ወደ FAF Earning Hub በሰላም مጡ!\n\n"
         f"⚠️ ማሳሰቢያ፡ አፑ ላይ የሰሩትን ገንዘብ ወጪ (Withdraw) ለማድረግ መጀመሪያ ከታች ያለውን ሰማያዊ በተን ተጭነው ስልክ ቁጥርዎን ማረጋገጥ አለብዎት!\n\n"
         f"🔗 የእርስዎ መጋበዣ ሊንክ፦\n"
         f"https://t.me/{BOT_USERNAME}?start={user_id}"
     )
     bot.send_message(message.chat.id, welcome_msg, reply_markup=markup)
 
-# 📲 ስልክ ቁጥሩን ከቴሌግራም ተቀብሎ ዳታቤዝ ላይ ሴቭ ማድረጊያ
 @bot.message_handler(content_types=['contact'])
 def handle_contact(message):
     user_id = str(message.from_user.id)
@@ -88,37 +88,77 @@ def handle_contact(message):
     user_info = get_user_data(user_id)
     if user_info:
         user_info['phone'] = contact.phone_number
-        # ሙሉ ስምም ካለው ፕሮፋይሉን ማጽደቅ
         if user_info.get('full_name'):
             user_info['profile_complete'] = True
         update_user_data(user_id, user_info)
         bot.reply_to(message, f"✅ ስልክ ቁጥርዎ ({contact.phone_number}) በተሳካ ሁኔታ ተረጋግጧል! አሁን በሚኒ አፑ ላይ ሙሉ ስምዎን በመሙላት ስራ መጀመር ይችላሉ።")
 
-# 🔗 3. አውቶማቲክ የ CPA Postback API (CPAGrip/MyLead ሰርቬይ ሲያልቅ ራሱ ብር የሚጨምርበት)
+# 🔒 ደህንነቱ የተጠበቀ የ AdsGram ማስታወቂያ ማስቆጠሪያ API (ባክኤንድ ጥበቃ)
+@app.route('/api/reward-ad', methods=['POST'])
+def reward_ad():
+    data = request.json
+    user_id = str(data.get('user_id'))
+    today = datetime.date.today().isoformat()
+    
+    user_info = get_user_data(user_id)
+    if not user_info:
+        return jsonify({"success": False, "message": "❌ መጀመሪያ ቦቱ ላይ /start ይበሉ!"}), 404
+        
+    if user_info.get('last_ad_date') != today:
+        user_info['ads_count'] = 0
+        user_info['last_ad_date'] = today
+        
+    if user_info.get('ads_count', 0) >= 15:
+        return jsonify({"success": False, "message": "❌ የዕለቱ የ 15 ማስታወቂያ ሊሚትዎን ጨርሰዋል። ነገ ይሞክሩ!"}), 400
+        
+    user_info['balance'] = user_info.get('balance', 0.0) + 1.50
+    user_info['ads_count'] = user_info.get('ads_count', 0) + 1
+    update_user_data(user_id, user_info)
+    
+    return jsonify({"success": True, "balance": user_info['balance'], "ads_count": user_info['ads_count']})
+
+# 👥 የሙሉ ስም እና የሳይለንት ቻናል ቦነስ ማረጋገጫ አንድ ላይ የተዋሃደ API
+@app.route('/api/user-info/<user_id>', methods=['GET'])
+def get_secure_user_info(user_id):
+    user_info = get_user_data(str(user_id))
+    if not user_info:
+        return jsonify({"error": "User not found"}), 404
+        
+    # 🤫 ቻናሉን ጆይን ካደረጉ በሳይለንት 0.5 ሳንቲም የመጨመሪያ መስመር
+    if not user_info.get('channel_checked', False):
+        try:
+            member = bot.get_chat_member(CHANNEL_ID, int(user_id))
+            if member.status in ['member', 'administrator', 'creator']:
+                user_info['balance'] = user_info.get('balance', 0.0) + 0.5
+                user_info['channel_checked'] = True
+                update_user_data(user_id, user_info)
+        except Exception as e:
+            print(f"Silent channel check info: {e}")
+            
+    return jsonify(user_info)
+
+# 🔗 እውነተኛ የ CPA Postback API (CPAGrip እና MyLead 1 ዶላር ሲመጣ 252 FAF Coin የሚያሰላ)
 @app.route('/api/postback', methods=['GET', 'POST'])
 def cpa_postback():
-    # CPAGrip የሚልከውን መረጃ መያዝ
-    user_id = request.args.get('user_id')
-    payout = request.args.get('amount') # ከሲፒኤ የሚመጣ የዶላር መጠን ወይም ቋሚ ነጥብ
+    user_id = request.args.get('subid') or request.args.get('user_id')
+    payout = request.args.get('payout') or request.args.get('amount')
     
-    if not user_id:
-        return "Missing User ID", 400
+    if not user_id or not payout:
+        return "Missing Parameters", 400
         
     user_info = get_user_data(str(user_id))
     if user_info:
-        # ለምሳሌ 1 ዶላር ሲመጣ 100 FAF Coin መስጠት ከፈለግክ እዚህ ጋር ማባዛት ትችላለህ
-        reward_coins = float(payout or 1) * 50  
+        reward_coins = float(payout) * 252  
         user_info['balance'] = user_info.get('balance', 0.0) + reward_coins
         update_user_data(user_id, user_info)
         
         try:
-            bot.send_message(user_id, f"🔥 ማሳሰቢያ፦ የ CPA ታስክ/ሰርቬይ በተሳካ ሁኔታ ስለጨረሱ +{reward_coins} FAF Coin ወደ አካውንትዎ ገብቷል!")
+            bot.send_message(user_id, f"🔥 ታላቅ ዜና፦ የ CPA ታስክ/ሰርቬይ በተሳካ ሁኔታ ስለጨረሱ +{reward_coins:.2f} FAF Coin ወደ አካውንትዎ ገብቷል!")
         except:
             pass
         return "Success", 200
     return "User not found", 404
 
-# 👤 4. የሙሉ ስም ማስቀመጫ API (ከ ሚኒ አፑ የሚመጣ)
 @app.route('/api/save-profile', methods=['POST'])
 def save_profile():
     data = request.json
@@ -130,7 +170,7 @@ def save_profile():
         return jsonify({"success": False, "message": "ተጠቃሚ አልተገኘም!"}), 404
         
     user_info['full_name'] = full_name
-    if user_info.get('phone'): # ስልኩ ቀድሞ በቦቱ ከተረጋገጠ
+    if user_info.get('phone'): 
         user_info['profile_complete'] = True
         
     update_user_data(user_id, user_info)
@@ -185,7 +225,6 @@ def withdraw():
     if not user_info:
         return jsonify({"success": False, "message": "❌ ተጠቃሚ አልተገኘም!"}), 404
         
-    # 🛑 የሴኩሪቲ ማረጋገጫ መስመር (ባክኤንድ ጥበቃ)
     if not user_info.get('profile_complete'):
         return jsonify({
             "success": False, 

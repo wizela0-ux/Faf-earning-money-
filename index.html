@@ -6,8 +6,8 @@
     <title>FAF Premium Earning App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
-    <!-- ⚠️ እዚህ ጋር ያንተን የ Adsgram ወይም Monetag የማስታወቂያ ስክሪፕት ታስገባለህ -->
-    <!-- <script src="https://adsgram.ai/sdk/v1/adsgram.js"></script> -->
+    <!-- ✅ እውነተኛው የ AdsGram ማስታወቂያ ስክሪፕት ስራ ላይ ውሏል -->
+    <script src="https://adsgram.ai/sdk/v1/adsgram.js"></script>
 
     <style>
         :root {
@@ -187,7 +187,6 @@
             </p>
         </div>
         
-        <!-- 👤 የፕሮፋይል ማረጋገጫ ስታተስ ማሳያ ካርድ -->
         <div class="premium-card" style="text-align: center; border-color: #ff9f43;">
             <h4 style="margin:0; color:#fff;">🔐 የደህንነት ፕሮፋይል ሁኔታ</h4>
             <div id="profile-status-badge" class="badge-status badge-unverified">ያልተረጋገጠ (Incomplete)</div>
@@ -220,18 +219,18 @@
 
         <h3 style="padding-left: 5px; color: #fff; font-size: 16px;">🔥 High Paying CPA Tasks</h3>
         
-        <!-- 🎯 ትክክለኛው የሲፒኤ ማያያዣ ቦታዎች -->
+        <!-- 🎯 CPALead Offerwall (ሁሌም ክፍት) -->
         <div class="cpa-box">
-            <h4 style="margin:0 0 5px 0; color:#fff;">🎯 CPAgp Offerwall 1</h4>
+            <h4 style="margin:0 0 5px 0; color:#fff;">🎯 CPALead Offerwall 1</h4>
             <p style="font-size:12px; color:var(--text-secondary); margin-bottom:10px;">ቀላል ጥያቄዎችን በመመለስ እና አፖችን በመጫን በየደቂቃው ሳንቲም ይሰብስቡ።</p>
-            <!-- ⚠️ እዚህ href ላይ ያወጣኸውን የ CPAGrip Offerwall ሊንክ ታስገባለህ &aff_sub=${userId} መጨመር እንዳትረሳ -->
-            <a href="https://www.cpagrip.com/show.php?l=0&u=YOUR_ID" target="_blank" class="led-btn" style="text-decoration:none; display:block; font-size:12px;">Open Offerwall (+50 Coins/Task)</a>
+            <a href="#" id="cpalead-link" target="_blank" class="led-btn" style="text-decoration:none; display:block; font-size:12px;">Open Offerwall (+50 Coins/Task)</a>
         </div>
 
-        <div class="cpa-box" style="border-color: var(--neon-green);">
+        <!-- 🔒 MyLead Premium Offers (የ 3 ቀን መቆለፊያ ያለበት) -->
+        <div class="cpa-box" id="mylead-box" style="border-color: var(--neon-green);">
             <h4 style="margin:0 0 5px 0; color:#fff;">🚀 MyLead Premium Offers</h4>
-            <p style="font-size:12px; color:var(--text-secondary); margin-bottom:10px;">ፈጣን ዳሰሳዎችን በመሙላት ከፍተኛ የ FAF Coin ተከፋይ ይሁኑ።</p>
-            <a href="https://mylead.global/show.php?id=YOUR_ID" target="_blank" class="led-btn" style="text-decoration:none; display:block; font-size:12px; border-color: var(--neon-green); color: var(--neon-green);">Start Surveys</a>
+            <p style="font-size:12px; color:var(--text-secondary); margin-bottom:10px;" id="mylead-lock-msg">ፈጣን ዳሰሳዎችን በመሙላት ከፍተኛ የ FAF Coin ተከፋይ ይሁኑ።</p>
+            <a href="#" id="mylead-link" target="_blank" class="led-btn" style="text-decoration:none; display:block; font-size:12px; border-color: var(--neon-green); color: var(--neon-green);">Start Surveys</a>
         </div>
     </div>
 
@@ -250,12 +249,10 @@
     <!-- ==================== TABS 4: ME ==================== -->
     <div id="Me" class="page">
         <div class="premium-card">
-            <div class="settings-icon" style="position:absolute; top:15px; right:15px; cursor:pointer;" onclick="openSettingsModal()">⚙️</div>
             <div style="text-align: center; color: #a0aec0; font-size:14px;">Total Account Balance</div>
             <div class="balance-display"><span id="user-balance">0.00</span> FAF Coin</div>
         </div>
 
-        <!-- 👤 እውነተኛ ስም መሙያ ፎርም (Profile Completion) -->
         <div class="premium-card" id="profile-setup-card">
             <h4 style="margin-top:0; color:#fff; text-align:center;">👤 ፕሮፋይል ማጠናቀቂያ</h4>
             <p style="font-size:12px; color:var(--text-secondary); text-align:center;">እባክዎ በባንክ ወይም በቴሌብር አካውንትዎ ላይ ያለውን እውነተኛ ሙሉ ስምዎን ያስገቡ፡</p>
@@ -270,23 +267,22 @@
                 • Minimum Referrals: 3 Active Users<br>
                 • Profile Status: Verified Phone & Name
             </div>
-            <button class="led-btn" style="border-color: var(--neon-green); color: var(--neon-green);" onclick="attemptWithdrawal()">Withdraw Money Now</button>
+            <button class="led-btn" style="border-color: var(--neon-green); color: var(--neon-green planetary-ring);" onclick="attemptWithdrawal()">Withdraw Money Now</button>
         </div>
     </div>
 
     <!-- ==================== MODALS ==================== -->
-    <!-- Withdraw Form Modal -->
     <div class="modal" id="withdraw-modal">
         <div class="modal-content">
             <h3 style="color:#fff; margin-top:0;">💸 የሽልማት ማውጫ ቅጽ</h3>
-            <select id="payment-method" onchange="handlePaymentMethodChange()">
+            <select id="payment-method">
                 <option value="telebirr">📱 Telebirr (ቴሌብር)</option>
                 <option value="cbe">🏦 Commercial Bank of Ethiopia (CBE)</option>
                 <option value="awash">🏦 Awash Bank</option>
                 <option value="pubg">🎮 PUBG Mobile UC (400 Coins = 60 UC)</option>
                 <option value="ff">🔥 Free Fire Diamond (400 Coins = 50 Diamonds)</option>
             </select>
-            <input type="text" id="account-number" placeholder="የቴሌብር ቁጥር ያስገቡ">
+            <input type="text" id="account-number" placeholder="የአካውንት ወይም የቴሌብር ቁጥር ያስገቡ">
             <input type="text" id="account-name" placeholder="ሙሉ ስም">
             <input type="number" id="withdraw-amount" placeholder="የሳንቲም መጠን (FAF Coin)">
             <button class="led-btn" style="margin-top:15px; border-color:var(--neon-green); color:var(--neon-green);" onclick="proceedToVerifyWithdrawal()">ቀጥል (Continue)</button>
@@ -294,7 +290,6 @@
         </div>
     </div>
 
-    <!-- PIN Verification Modal -->
     <div class="modal" id="verify-modal">
         <div class="modal-content">
             <h3 style="color:#fff; margin-top:0;">የደህንነት ማረጋገጫ (PIN)</h3>
@@ -308,6 +303,9 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
         const userId = tg.initDataUnsafe?.user?.id || "123456";
+
+        // ✅ AdsGram ኢንተግሬሽን መለያ ቁጥር 39851
+        const AdController = window.Adsgram?.createAdListener({ blockId: "39851" });
 
         let isProfileComplete = false;
         let currentTotalInvites = 0;
@@ -328,9 +326,10 @@
             element.classList.add('active');
         }
 
+        // ✅ በሰርቨር በኩል የደህንነት ስራዎችን የሚሰራ አዲስ ሎደር
         async function loadUserData() {
             try {
-                const res = await fetch(`https://faf-earning-money-default-rtdb.firebaseio.com/users/${userId}.json`);
+                const res = await fetch(`${BACKEND_URL}/api/user-info/${userId}`);
                 const user = await res.json();
                 if(user) {
                     document.getElementById('user-balance').innerText = parseFloat(user.balance || 0).toFixed(2);
@@ -340,7 +339,33 @@
                     document.getElementById('stat-inv').innerText = currentTotalInvites;
                     document.getElementById('ref-link').innerText = `https://t.me/FAF_Earning_money_bot?start=${userId}`;
                     
-                    // የሴኩሪቲ ቼክ ማረጋገጫ
+                    // 🔒 MyLead የ 3 ቀን መቆለፊያ አመክንዮ (Time-Lock)
+                    const joinDate = new Date(user.join_date);
+                    const today = new Date();
+                    const diffTime = Math.abs(today - joinDate);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    
+                    const myleadBox = document.getElementById('mylead-box');
+                    const myleadLink = document.getElementById('mylead-link');
+                    const myleadMsg = document.getElementById('mylead-lock-msg');
+                    
+                    if (diffDays <= 3) {
+                        myleadLink.removeAttribute('href');
+                        myleadLink.style.opacity = "0.4";
+                        myleadLink.style.pointerEvents = "none";
+                        myleadMsg.innerHTML = "🔒 <span style='color:var(--neon-red); font-weight:bold;'>ቁልፍ ነው፦</span> ከተመዘገቡ 3 ቀናት ሲሞላዎት በራሱ ይከፈታል!";
+                        myleadBox.style.borderColor = "var(--neon-red)";
+                    } else {
+                        myleadLink.setAttribute('href', `https://clicknlook.site/iframe/142fbe08-891f-11f1-84fb-129a1c289511?subid=${userId}`);
+                        myleadLink.style.opacity = "1";
+                        myleadLink.style.pointerEvents = "auto";
+                        myleadMsg.innerText = "ፈጣን ዳሰሳዎችን በመሙላት ከፍተኛ የ FAF Coin ተከፋይ ይሁኑ።";
+                        myleadBox.style.borderColor = "var(--neon-green)";
+                    }
+
+                    // ✅ የ CPALead ሊንክ ከ SubID ጋር ማገናኛ
+                    document.getElementById('cpalead-link').href = `https://www.fastrsrvr.com/wall/d5uQ?subid=${userId}`;
+                    
                     isProfileComplete = user.profile_complete || false;
                     const badge = document.getElementById('profile-status-badge');
                     if (isProfileComplete) {
@@ -387,24 +412,31 @@
             document.getElementById('withdraw-modal').style.display = 'flex';
         }
 
+        // 🛡️ ፍጹም የተጠበቀ የ AdsGram ቪዲዮ ማሳያ ማስተካከያ
         async function watchAdVideo() {
-            // ⚠️ እዚህ ጋር ያንተን የቪዲዮ ማስታወቂያ ኔትወርክ (Adsgram/Monetag) ትጠራለህ
-            // ማስታወቂያው አልቆ ስኬታማ ሲሆን ወደ ባክኤንድ ፌች ይደረጋል፡
+            if (!AdController) {
+                showCustomAlert("የማስታወቂያ ኔትወርክ አልተጫነም! እባክዎ ኢንተርኔትዎን ቼክ ያድርጉ።", false);
+                return;
+            }
             showCustomAlert("የማስታወቂያ ቪዲዮ በመጫን ላይ...");
             
-            // የድሮው የፌክ ማስታወቂያ ማስቆጠሪያ መስመር
-            const userRes = await fetch(`https://faf-earning-money-default-rtdb.firebaseio.com/users/${userId}.json`);
-            const user = await userRes.json();
-            let currentAds = user?.ads_count || 0;
-            if(currentAds >= 15) { showCustomAlert("የዕለቱ ማስታወቂያ አልቋል!", false); return; }
-            
-            let newBal = parseFloat(user?.balance || 0) + 1.50;
-            await fetch(`https://faf-earning-money-default-rtdb.firebaseio.com/users/${userId}.json`, {
-                method: 'PATCH',
-                body: JSON.stringify({ balance: newBal, ads_count: currentAds + 1 })
+            AdController.show().then(async (result) => {
+                // ማስታወቂያው ሲያልቅ ቀጥታ ወደ ሰርቨርህ ሴኩሪቲ ጥሪ ይደረጋል
+                const res = await fetch(`${BACKEND_URL}/api/reward-ad`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ user_id: userId })
+                });
+                const data = await res.json();
+                if(data.success) {
+                    showCustomAlert("🎉 +1.50 FAF Coin በተሳካ ሁኔታ ተጨምሯል!");
+                    loadUserData();
+                } else {
+                    showCustomAlert(data.message, false);
+                }
+            }).catch((err) => {
+                showCustomAlert("❌ ማስታወቂያው አልተጠናቀቀም ወይም ቀድመው ዘግተውታል።", false);
             });
-            showCustomAlert("+1.50 FAF Coin ተጨምሯል!");
-            loadUserData();
         }
 
         function proceedToVerifyWithdrawal() {
@@ -447,11 +479,11 @@
             }
         }
 
-        function handlePaymentMethodChange() {}
         function copyRefLink() {
             navigator.clipboard.writeText(document.getElementById('ref-link').innerText);
             showCustomAlert("ሊንኩ ተገልብጧል!");
         }
+        
         async function triggerDailyBonus() {
             const res = await fetch(`${BACKEND_URL}/api/daily-bonus`, {
                 method: "POST",
@@ -465,5 +497,13 @@
 
         window.onload = () => { loadUserData(); };
     </script>
+
+    <!-- 底部导航栏 -->
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('Home', this)">🏠 Home</div>
+        <div class="nav-item" onclick="switchTab('Earn', this)">💰 Earn</div>
+        <div class="nav-item" onclick="switchTab('Refer', this)">👥 Refer</div>
+        <div class="nav-item" onclick="switchTab('Me', this)">👤 Me</div>
+    </div>
 </body>
 </html>
